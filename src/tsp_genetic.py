@@ -41,3 +41,20 @@ class TSPGenetic:
         # Keep the top half of the population
         sorted_population = sorted_population[:self.population_size // 2]
         return sorted_population
+    
+    def create_child(self, parent1, parent2):
+        start, end = sorted(random.sample(range(self.num_cities), 2))
+        # Initialize child 
+        child = [-1] * self.num_cities
+        # Copy the subsequence from parent1
+        child[start:end] = parent1[start:end]
+
+        # Fill the remaining positions with the genes from parent2
+        current_pos = (end + 1) % self.num_cities
+        for city in parent2:
+            if city not in child:
+                while child[current_pos] == -1:
+                    current_pos = (current_pos + 1) % self.num_cities
+                child[current_pos] = city
+        
+        return np.array(child)
