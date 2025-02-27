@@ -34,7 +34,9 @@ class TSPGenetic:
             from_city = individual[i]
             to_city = individual[(i + 1) % len(individual)]
             total_distance += distance_matrix[from_city, to_city]
-        return 1 / total_distance
+        # Add a small epsilon to avoid division by zero
+        epsilon = 1e-10
+        return 1 / (total_distance + epsilon)
     
     def selection(self):
         sorted_population = sorted(self.population, key=lambda x: self.fitness(x, self.distance_matrix), reverse=True)
@@ -50,10 +52,10 @@ class TSPGenetic:
         child[start:end] = parent1[start:end]
 
         # Fill the remaining positions with the genes from parent2
-        current_pos = (end + 1) % self.num_cities
+        current_pos = end % self.num_cities
         for city in parent2:
             if city not in child:
-                while child[current_pos] == -1:
+                while child[current_pos] != -1:
                     current_pos = (current_pos + 1) % self.num_cities
                 child[current_pos] = city
         
@@ -88,4 +90,6 @@ class TSPGenetic:
             if current_distance < best_distance:
                 best_route = current_best_route
                 best_distance = current_distance
+        print(f"Best route: {best_route}")
+        print(f"Best distance: {best_distance}")
         return best_route, best_distance
