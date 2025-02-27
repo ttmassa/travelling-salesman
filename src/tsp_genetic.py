@@ -58,3 +58,22 @@ class TSPGenetic:
                 child[current_pos] = city
         
         return np.array(child)
+
+    def mutate(self, individual):
+        if random.random() < self.mutation_rate:
+            # Swap two random cities
+            i, j = random.sample(range(self.num_cities), 2)
+            individual[i], individual[j] = individual[j], individual[i]
+        return individual
+
+    def evolve(self):
+        new_population = []
+        # Perform selection
+        selected_population = self.selection()
+        # Populate new generation with childs from selected parents
+        while len(new_population) < self.population_size:
+            parent1, parent2 = random.sample(selected_population, 2)
+            child = self.create_child(parent1, parent2)
+            self.mutate(child)
+            new_population.append(child)
+        self.population = new_population
