@@ -77,3 +77,15 @@ class TSPGenetic:
             self.mutate(child)
             new_population.append(child)
         self.population = new_population
+
+    def run(self):
+        best_route = None
+        best_distance = float('inf')
+        for _ in range(self.generations):
+            self.evolve()
+            current_best_route = min(self.population, key=lambda x: self.fitness(x, self.distance_matrix))
+            current_distance = self.fitness(current_best_route, self.distance_matrix)
+            if current_distance < best_distance:
+                best_route = current_best_route
+                best_distance = current_distance
+        return best_route, best_distance
