@@ -1,2 +1,8 @@
 # File used to write down what I need to do next
 features.txt
+
+# python virtual environment
+venv/
+
+# python cache
+__pycache__/
