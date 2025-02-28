@@ -78,10 +78,10 @@ class MainWindow(QMainWindow):
 
     def run_algorithm(self):
         # Get the parameters from the input fields
-        num_cities = int(self.num_cities_input.text()) 
-        population_size = int(self.population_size_input.text()) 
-        generations = int(self.generations_input.text()) 
-        mutation_rate = float(self.mutation_rate_input.text()) 
+        num_cities = int(self.num_cities_input.text()) if self.num_cities_input.text() else 10
+        population_size = int(self.population_size_input.text()) if self.population_size_input.text() else 100
+        generations = int(self.generations_input.text()) if self.generations_input.text() else 500
+        mutation_rate = float(self.mutation_rate_input.text()) if self.mutation_rate_input.text() else 0.01
 
         # Create an instance of the TSPGenetic class
         tsp_genetic = TSPGenetic(num_cities=num_cities ,population_size=population_size, generations=generations, mutation_rate=mutation_rate)
