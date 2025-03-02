@@ -46,18 +46,6 @@ class ResultWindow(QDialog):
 
         legend_layout.addSpacing(20)
 
-        # End legend
-        end_legend_layout = QHBoxLayout()
-        end_legend = QLabel("End City: ", self)
-        end_legend.setStyleSheet("font-size: 14px; font-weight: bold;")
-        end_legend_layout.addWidget(end_legend, alignment=Qt.AlignCenter)
-        legend_layout.addLayout(end_legend_layout)
-
-        end_color = QLabel(self)
-        end_color.setFixedSize(10, 10)
-        end_color.setStyleSheet("background-color: red; border-radius: 5px;")
-        end_legend_layout.addWidget(end_color, alignment=Qt.AlignCenter)
-
         layout.addLayout(legend_layout)
 
         self.setLayout(layout)
@@ -70,14 +58,15 @@ class ResultWindow(QDialog):
         x = [self.cities[i][0] for i in self.best_path]
         y = [self.cities[i][1] for i in self.best_path]
 
+        # Close the cycle by adding the start city at the end
+        x.append(x[0])
+        y.append(y[0])
+
         # Plot the path
         ax.plot(x, y, marker='o', linestyle='-', color='b')
 
         # Highlight the start city
         ax.plot(x[0], y[0], marker='o', linestyle='-', color='g', label='Start')
-
-        # Highlight the end city
-        ax.plot(x[-1], y[-1], marker='o', linestyle='-', color='r', label='End')
 
         # Annotate each city
         for i, city_index in enumerate(self.best_path):
