@@ -28,18 +28,18 @@ class TSPGenetic:
             population.append(individual)
         return population
 
-    def fitness(self, individual, distance_matrix):
+    def fitness(self, individual):
         total_distance = 0
         for i in range(len(individual)):
             from_city = individual[i]
             to_city = individual[(i + 1) % len(individual)]
-            total_distance += distance_matrix[from_city, to_city]
+            total_distance += self.distance_matrix[from_city, to_city] 
         # Add a small epsilon to avoid division by zero
         epsilon = 1e-10
         return 1 / (total_distance + epsilon)
     
     def selection(self):
-        sorted_population = sorted(self.population, key=lambda x: self.fitness(x, self.distance_matrix), reverse=True)
+        sorted_population = sorted(self.population, key=self.fitness, reverse=True)
         # Keep the top half of the population
         sorted_population = sorted_population[:self.population_size // 2]
         return sorted_population
@@ -85,11 +85,14 @@ class TSPGenetic:
         best_distance = float('inf')
         for _ in range(self.generations):
             self.evolve()
-            current_best_route = min(self.population, key=lambda x: self.fitness(x, self.distance_matrix))
-            current_distance = self.fitness(current_best_route, self.distance_matrix)
+            current_best_route = max(self.population, key=lambda x: self.fitness(x))
+            current_distance = 1 / self.fitness(current_best_route)
             if current_distance < best_distance:
                 best_route = current_best_route
                 best_distance = current_distance
+        print(self.cities)
+        for i, city in enumerate(self.cities):
+            print(f"City {i}: {city}")
         print(f"Best route: {best_route}")
         print(f"Best distance: {best_distance}")
         return best_route, best_distance
