@@ -1,9 +1,3 @@
-import sys
-import os
-
-# Add the parent directory to the path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QHBoxLayout
 from PyQt5.QtCore import Qt
 import matplotlib.pyplot as plt

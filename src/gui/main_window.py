@@ -1,13 +1,7 @@
-import sys
-import os
-
-# Add the parent directory to the path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel, QFormLayout, QLineEdit, QSizePolicy, QDialog
 from PyQt5.QtCore import Qt
 from tsp_genetic import TSPGenetic
-from result_window import ResultWindow
+from gui.result_window import ResultWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -92,8 +86,3 @@ class MainWindow(QMainWindow):
         result_window = ResultWindow(best_path=best_path, best_distance=best_distance, cities=tsp_genetic.cities)
         result_window.exec_()
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec_())
