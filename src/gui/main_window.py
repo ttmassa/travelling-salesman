@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout,
 from PyQt5.QtCore import Qt
 from tsp_genetic import TSPGenetic
 from gui.result_window import ResultWindow
+from params import PARAMS
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -40,23 +41,28 @@ class MainWindow(QMainWindow):
 
         # Number of cities
         self.num_cities_input = QLineEdit(self)
-        self.num_cities_input.setPlaceholderText("Number of cities (default: 10)")
+        self.num_cities_input.setPlaceholderText(f"Number of cities (default: {PARAMS.default_num_cities})")
         form_layout.addRow("Number of cities:", self.num_cities_input)
 
         # Population size
         self.population_size_input = QLineEdit(self)
-        self.population_size_input.setPlaceholderText("Population size (default: 100)")
+        self.population_size_input.setPlaceholderText(f"Population size (default: {PARAMS.default_population_size})")
         form_layout.addRow("Population size:", self.population_size_input)
 
         # Number of generations
         self.generations_input = QLineEdit(self)
-        self.generations_input.setPlaceholderText("Number of generations (default: 500)")
+        self.generations_input.setPlaceholderText(f"Number of generations (default: {PARAMS.default_gen_count})")
         form_layout.addRow("Number of generations:", self.generations_input)
 
         # Mutation rate
         self.mutation_rate_input = QLineEdit(self)
-        self.mutation_rate_input.setPlaceholderText("Mutation rate (default: 0.01)")
+        self.mutation_rate_input.setPlaceholderText(f"Mutation rate (default: {PARAMS.default_mutation_rate})")
         form_layout.addRow("Mutation rate:", self.mutation_rate_input)
+
+        # Elitism
+        self.elitism_input = QLineEdit(self)
+        self.elitism_input.setPlaceholderText(f"Elitism (default: {PARAMS.default_elitism})")
+        form_layout.addRow("Mutation rate:", self.elitism_input)
 
         parameters_layout.addLayout(form_layout)
         layout.addLayout(parameters_layout)
@@ -73,13 +79,14 @@ class MainWindow(QMainWindow):
 
     def run_algorithm(self):
         # Get the parameters from the input fields
-        num_cities = int(self.num_cities_input.text()) if self.num_cities_input.text() else 10
-        population_size = int(self.population_size_input.text()) if self.population_size_input.text() else 100
-        generations = int(self.generations_input.text()) if self.generations_input.text() else 500
-        mutation_rate = float(self.mutation_rate_input.text()) if self.mutation_rate_input.text() else 0.01
+        num_cities = int(self.num_cities_input.text()) if self.num_cities_input.text() else PARAMS.default_num_cities
+        population_size = int(self.population_size_input.text()) if self.population_size_input.text() else PARAMS.default_population_size
+        generations = int(self.generations_input.text()) if self.generations_input.text() else PARAMS.default_gen_count
+        mutation_rate = float(self.mutation_rate_input.text()) if self.mutation_rate_input.text() else PARAMS.default_mutation_rate
+        elitism = float(self.elitism_input.text()) if self.elitism_input.text() else PARAMS.default_elitism
 
         # Create an instance of the TSPGenetic class
-        tsp_genetic = TSPGenetic(num_cities=num_cities ,population_size=population_size, generations=generations, mutation_rate=mutation_rate)
+        tsp_genetic = TSPGenetic(num_cities, population_size, generations, mutation_rate, elitism)
         best_path, best_distance = tsp_genetic.run()
 
         # Show the result in a new window
