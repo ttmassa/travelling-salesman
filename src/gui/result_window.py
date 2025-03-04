@@ -94,7 +94,8 @@ class ResultWindow(QDialog):
         buttons_layout.addWidget(self.previous_button)
 
         self.play_button = QPushButton("Play", self)
-        self.play_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #39ED4B;")
+        play_button_bg_color = "#39ED4B" if PARAMS.auto_start else "#FF0000"
+        self.play_button.setStyleSheet(f"font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: {play_button_bg_color};")
         buttons_layout.addWidget(self.play_button)
 
         self.next_button = QPushButton("Next", self)
@@ -114,6 +115,15 @@ class ResultWindow(QDialog):
         self.ax.set_ylim(min(self.points_y) - 0.05, max(self.points_y) + 0.05)
 
         layout.addWidget(self.canvas)
+
+        # Add tooltips
+        self.annot = self.ax.annotate("", xy=(0,0), xytext=(20,20),
+                                      textcoords="offset points",
+                                      bbox=dict(boxstyle="round", fc="w"),
+                                      arrowprops=dict(arrowstyle="->"))
+        self.annot.set_visible(False)
+
+        self.canvas.mpl_connect("motion_notify_event", self.hover)
 
     # --- UTILITY METHODS --- #
 
@@ -140,6 +150,7 @@ class ResultWindow(QDialog):
         self.segments.append(segment)
         self.canvas.draw()
         self.index += 1
+        self.update_buttons()
 
     def previous_segment(self):
         if self.index == 0:
@@ -147,13 +158,52 @@ class ResultWindow(QDialog):
         self.segments.pop().remove()
         self.canvas.draw()
         self.index -= 1
+        self.update_buttons()
 
     def play_timer(self):
-        self.timer.start(PARAMS.animation_speed)
-        self.play_button.setText("Pause")
-        self.play_button.clicked.connect(self.stop_timer)
+        if self.index < len(self.points_x) - 1:
+            self.timer.start(PARAMS.animation_speed)
+            self.play_button.clicked.connect(self.stop_timer)
+        self.update_buttons()
 
     def stop_timer(self):
         self.timer.stop()
-        self.play_button.setText("Play")
         self.play_button.clicked.connect(self.play_timer)
+        self.update_buttons()
+
+    def update_buttons(self):
+        def set_button_style(button, text, color):
+            button.setText(text)
+            button.setStyleSheet(f"font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: {color};")
+
+        prev_color = "#A0A0A0" if self.index == 0 else "#39ED4B"
+        set_button_style(self.previous_button, "Previous", prev_color)
+
+        if self.index >= len(self.points_x) - 1:
+            set_button_style(self.play_button, "Play", "#A0A0A0")
+            set_button_style(self.next_button, "Next", "#A0A0A0")
+        else:
+            play_text = "Pause" if self.timer.isActive() else "Play"
+            set_button_style(self.play_button, play_text, "#39ED4B")
+            set_button_style(self.next_button, "Next", "#39ED4B")
+
+    def update_annot(self, ind):
+        x, y = self.points_x[ind], self.points_y[ind]
+        self.annot.xy = (x, y)
+        text = f"({x:.2f}, {y:.2f})"
+        self.annot.set_text(text)
+        # Box transparency
+        self.annot.get_bbox_patch().set_alpha(0.4)
+
+    def hover(self, event):
+        vis = self.annot.get_visible()
+        if event.inaxes == self.ax:
+            for i, (x, y) in enumerate(zip(self.points_x, self.points_y)):
+                if abs(x - event.xdata) < 0.01 and abs(y - event.ydata) < 0.01:
+                    self.update_annot(i)
+                    self.annot.set_visible(True)
+                    self.canvas.draw_idle()
+                    return
+            if vis:
+                self.annot.set_visible(False)
+                self.canvas.draw_idle()
