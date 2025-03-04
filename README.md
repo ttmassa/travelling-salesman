@@ -1,6 +1,6 @@
 # Travelling Salesman Problem Solution
 
-A solution to the travelling salesman problem (TSP) using a genetic algorithm and providing a GUI to execute it and see the results.
+A solution to the travelling salesman problem (TSP) using a genetic algorithm. This provides a GUI to execute it and visualize the results.
 
 ## Table of contents
 
@@ -20,7 +20,7 @@ A solution to the travelling salesman problem (TSP) using a genetic algorithm an
 
 ## Installation
 
-To use the gui, follow these steps:
+To use the GUI, follow these steps:
 
 1. Clone the repository:
 
