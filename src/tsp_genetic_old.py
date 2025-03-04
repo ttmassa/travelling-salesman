@@ -14,8 +14,6 @@ class TSPGenetic:
         self.on_gen_update = on_gen_update
         self.is_ended = False
 
-        self.elit_count = int(self.elitism * self.population_size)
-
     def calculate_distance_matrix(self):
         # Initialize distance matrix : distance_matrix[i, j] = norm(cities[i] - cities[j])
         diff = self.cities[:, np.newaxis] - self.cities[np.newaxis, :]
@@ -23,33 +21,38 @@ class TSPGenetic:
 
     def generate_population(self):
         # Each individual is a permutation of the cities
-        population = [np.random.permutation(self.num_cities) for _ in range(self.population_size)]
-        distances = [self.compute_individual_distance(ind) for ind in population]
-        return list(zip(population, distances))
+        return np.array([np.random.permutation(self.num_cities) for _ in range(self.population_size)])
 
-    def compute_individual_distance(self, individual):
+    def compute_total_distance(self, individual):
         shifted_indices = np.roll(individual, -1)
         return np.sum(self.distance_matrix[individual, shifted_indices])
+    def fitness(self, individual):
+        # Add a small epsilon to avoid division by zero
+        # epsilon = 1e-10
+        return 1 / self.compute_total_distance(individual)
+
+    def selection(self):
+        sorted_population = sorted(self.population, key=self.fitness, reverse=True)
+        # Keep the top half of the population
+        sorted_population = sorted_population[:int(self.population_size * self.elitism)]
+        return sorted_population
 
     def create_child(self, parent1, parent2):
         start, end = sorted(random.sample(range(self.num_cities), 2))
-        # # Initialize child
-        child = np.full(self.num_cities, -1)
+        # Initialize child 
+        child = [-1] * self.num_cities
+        # Copy the subsequence from parent1
         child[start:end] = parent1[start:end]
-        parent1_genes = set(parent1[start:end])
-
-        # empty_positions = np.where(child == -1)[0]
-        # child[empty_positions] = [city for city in parent2 if city not in parent1_genes]
 
         # Fill the remaining positions with the genes from parent2
         current_pos = end % self.num_cities
         for city in parent2:
-            if city not in parent1_genes:
+            if city not in child:
+                while child[current_pos] != -1:
+                    current_pos = (current_pos + 1) % self.num_cities
                 child[current_pos] = city
-                current_pos = (current_pos + 1) % self.num_cities
 
-        self.mutate(child)
-        return (child, self.compute_individual_distance(child))
+        return np.array(child)
 
     def mutate(self, individual):
         if random.random() < self.mutation_rate:
@@ -59,28 +62,36 @@ class TSPGenetic:
         return individual
 
     def evolve(self):
+        new_population = []
         # Perform selection
-        individuals, weights = zip(*self.population)
-        new_population = [self.create_child(*random.choices(individuals, map(lambda x: 1 / (2**x), weights), k=2)) for _ in range(self.population_size - self.elit_count)]
-        self.population = self.population[:self.elit_count] + new_population
+        selected_population = self.selection()
+        # Populate new generation with childs from selected parents
+        while len(new_population) < self.population_size:
+            parent1, parent2 = random.sample(selected_population, 2)
+            child = self.create_child(parent1, parent2)
+            self.mutate(child)
+            new_population.append(child)
+        self.population = new_population
 
     def run(self):
         best_route = None
         best_distance = float('inf')
         for i in range(self.generations):
-            self.population.sort(key = lambda x: x[1])
             self.evolve()
-            current_best_route = self.population[0]
-            if not best_route or current_best_route[1] < best_route[1]:
+            current_best_route = max(self.population, key=lambda x: self.fitness(x))
+            current_distance = 1 / self.fitness(current_best_route)
+            if current_distance < best_distance:
                 best_route = current_best_route
+                best_distance = current_distance
             if self.on_gen_update:
-                if self.on_gen_update(i, [w for (_, w) in self.population]):
+                if self.on_gen_update(i, [1 / self.fitness(e) for e in self.population]):
                     return
         # print(self.cities)
         # for i, city in enumerate(self.cities):
         #     print(f"City {i}: {city}")
-        print(f"Best route: {best_route[0]}")
-        print(f"Best distance: {best_route[1]}")
+        print(f"Best route: {best_route}")
+        print(f"Best distance: {best_distance}")
 
-        self.best_route, self.best_distance = best_route
+        self.best_route = best_route
+        self.best_distance = best_distance
         self.is_ended = True

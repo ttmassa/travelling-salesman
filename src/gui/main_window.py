@@ -2,7 +2,9 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout,
 from PyQt5.QtCore import Qt
 from tsp_genetic import TSPGenetic
 from gui.result_window import ResultWindow
+from gui.evolution_window import EvolutionWindow
 from params import PARAMS
+import time
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -62,7 +64,7 @@ class MainWindow(QMainWindow):
         # Elitism
         self.elitism_input = QLineEdit(self)
         self.elitism_input.setPlaceholderText(f"Elitism (default: {PARAMS.default_elitism})")
-        form_layout.addRow("Mutation rate:", self.elitism_input)
+        form_layout.addRow("Elitism:", self.elitism_input)
 
         parameters_layout.addLayout(form_layout)
         layout.addLayout(parameters_layout)
@@ -85,11 +87,19 @@ class MainWindow(QMainWindow):
         mutation_rate = float(self.mutation_rate_input.text()) if self.mutation_rate_input.text() else PARAMS.default_mutation_rate
         elitism = float(self.elitism_input.text()) if self.elitism_input.text() else PARAMS.default_elitism
 
-        # Create an instance of the TSPGenetic class
-        tsp_genetic = TSPGenetic(num_cities, population_size, generations, mutation_rate, elitism)
-        best_path, best_distance = tsp_genetic.run()
+        if PARAMS.show_evolution:
+            EvolutionWindow(num_cities, population_size, generations, mutation_rate, elitism)
+        else:
+            # Create an instance of the TSPGenetic class
+            t1 = time.time()
+            tsp_genetic = TSPGenetic(num_cities, population_size, generations, mutation_rate, elitism)
+            t2 = time.time()
+            print(t2 - t1)
+            tsp_genetic.run()
+            t3 = time.time()
+            print(t3 - t2)
 
-        # Show the result in a new window
-        result_window = ResultWindow(best_path=best_path, best_distance=best_distance, cities=tsp_genetic.cities)
-        result_window.exec_()
+            # Show the result in a new window
+            result_window = ResultWindow(tsp_genetic.best_route, tsp_genetic.best_distance, tsp_genetic.cities)
+            result_window.exec_()
 
