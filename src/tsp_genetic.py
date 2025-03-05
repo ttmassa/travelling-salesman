@@ -8,13 +8,12 @@ class TSPGenetic:
         self.generations = generations
         self.mutation_rate = mutation_rate
         self.elitism = elitism
+        self.on_gen_update = on_gen_update
         self.cities = np.random.rand(num_cities, 2)
         self.distance_matrix = self.calculate_distance_matrix()
         self.population = self.generate_population()
-        self.on_gen_update = on_gen_update
-        self.is_ended = False
-
         self.elit_count = int(self.elitism * self.population_size)
+        self.is_ended = False
 
     def calculate_distance_matrix(self):
         # Initialize distance matrix : distance_matrix[i, j] = norm(cities[i] - cities[j])
@@ -33,13 +32,10 @@ class TSPGenetic:
 
     def create_child(self, parent1, parent2):
         start, end = sorted(random.sample(range(self.num_cities), 2))
-        # # Initialize child
+        # Initialize child
         child = np.full(self.num_cities, -1)
         child[start:end] = parent1[start:end]
         parent1_genes = set(parent1[start:end])
-
-        # empty_positions = np.where(child == -1)[0]
-        # child[empty_positions] = [city for city in parent2 if city not in parent1_genes]
 
         # Fill the remaining positions with the genes from parent2
         current_pos = end % self.num_cities
@@ -61,26 +57,25 @@ class TSPGenetic:
     def evolve(self):
         # Perform selection
         individuals, weights = zip(*self.population)
+        # Use the weights to select the fit individuals with higher probability
         new_population = [self.create_child(*random.choices(individuals, map(lambda x: 1 / (2**x), weights), k=2)) for _ in range(self.population_size - self.elit_count)]
+        # Combine the elite individuals with the new population
         self.population = self.population[:self.elit_count] + new_population
 
     def run(self):
-        best_route = None
-        best_distance = float('inf')
+        best_individual = None
         for i in range(self.generations):
+            # Sort the population based on fitness
             self.population.sort(key = lambda x: x[1])
             self.evolve()
-            current_best_route = self.population[0]
-            if not best_route or current_best_route[1] < best_route[1]:
-                best_route = current_best_route
+            current_best_individual = self.population[0]
+            if not best_individual or current_best_individual[1] < best_individual[1]:
+                best_individual = current_best_individual
             if self.on_gen_update:
                 if self.on_gen_update(i, [w for (_, w) in self.population]):
                     return
-        # print(self.cities)
-        # for i, city in enumerate(self.cities):
-        #     print(f"City {i}: {city}")
-        print(f"Best route: {best_route[0]}")
-        print(f"Best distance: {best_route[1]}")
+        print(f"Best route: {best_individual[0]}")
+        print(f"Best distance: {best_individual[1]}")
 
-        self.best_route, self.best_distance = best_route
+        self.best_route, self.best_distance = best_individual
         self.is_ended = True
