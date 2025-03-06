@@ -75,7 +75,7 @@ class TSPGenetic:
             if not best_individual or current_best_individual[1] < best_individual[1]:
                 best_individual = current_best_individual
             if self.on_gen_update:
-                if self.on_gen_update(i, [w for (_, w) in self.population]):
+                if self.on_gen_update(i, [w for (_, w) in self.population], zip(*map(lambda city: self.cities[city], self.population[0][0]))):
                     return
         # print(f"Best route: {best_individual[0]}")
         # print(f"Best distance: {best_individual[1]}")

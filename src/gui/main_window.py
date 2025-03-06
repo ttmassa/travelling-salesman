@@ -87,19 +87,23 @@ class MainWindow(QMainWindow):
         mutation_rate = float(self.mutation_rate_input.text()) if self.mutation_rate_input.text() else PARAMS.default_mutation_rate
         elitism = float(self.elitism_input.text()) if self.elitism_input.text() else PARAMS.default_elitism
 
-        if PARAMS.show_evolution:
-            EvolutionWindow(num_cities, population_size, generations, mutation_rate, elitism)
-        else:
-            # Create an instance of the TSPGenetic class
-            t1 = time.time()
-            tsp_genetic = TSPGenetic(num_cities, population_size, generations, mutation_rate, elitism)
-            t2 = time.time()
-            print(t2 - t1)
-            tsp_genetic.run()
-            t3 = time.time()
-            print(t3 - t2)
+        tsp_genetic = TSPGenetic(num_cities, population_size, generations, mutation_rate, elitism)
 
-            # Show the result in a new window
-            result_window = ResultWindow(tsp_genetic.best_route, tsp_genetic.best_distance, tsp_genetic.cities)
-            result_window.exec_()
+        ResultWindow(tsp_genetic).exec()
+
+        # if PARAMS.show_evolution:
+        #     EvolutionWindow(num_cities, population_size, generations, mutation_rate, elitism)
+        # else:
+        #     # Create an instance of the TSPGenetic class
+        #     t1 = time.time()
+        #     tsp_genetic = TSPGenetic(num_cities, population_size, generations, mutation_rate, elitism)
+        #     t2 = time.time()
+        #     print(t2 - t1)
+        #     tsp_genetic.run()
+        #     t3 = time.time()
+        #     print(t3 - t2)
+
+        #     # Show the result in a new window
+        #     result_window = ResultWindow(tsp_genetic.best_route, tsp_genetic.best_distance, tsp_genetic.cities)
+        #     result_window.exec_()
 
