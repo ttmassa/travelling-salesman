@@ -1,5 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel, QFormLayout, QLineEdit, QSizePolicy, QDialog
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QWidget
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 
@@ -22,11 +21,9 @@ class PopEvolutionWidget(QWidget):
         self.close_button.hide()
         self.layout().addWidget(self.close_button)
 
-    def update_plot(self):
-        if self.evolutions:
-            gen_index, points_y = self.evolutions.pop(0)
-            self.ax.plot([gen_index] * len(points_y), points_y, 'ro')
-            self.canvas.draw()
+    def updatePlot(self, gen_index, points_y):
+        self.ax.plot([gen_index] * len(points_y), points_y, 'ro')
+        self.canvas.draw()
 
     def tspEnded(self):
         self.close_button.show()

@@ -1,9 +1,6 @@
 
 class Option:
-    show_evolution: bool = True
-
-    animated: bool = True
-    auto_start: bool = True
+    auto_start_animation: bool = True
     animation_speed: int = 200
     evolution_animation_speed: int = 100
 
@@ -12,5 +9,6 @@ class Option:
     default_gen_count: int = 10
     default_mutation_rate: float = 0.01
     default_elitism: float = 0.1
+    default_show_evolution: bool = True
 
 PARAMS = Option()

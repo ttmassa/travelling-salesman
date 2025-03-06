@@ -9,8 +9,8 @@ class TSPGenetic:
         self.mutation_rate = mutation_rate
         self.elitism = elitism
         self.cities = pre_gen_cities if pre_gen_cities is not None else np.random.rand(num_cities, 2)
-        self.distance_matrix = self.calculate_distance_matrix()
-        self.population = self.generate_population()
+        self.distance_matrix = self.calculateDistanceMatrix()
+        self.population = self.generatePopulation()
         self.elit_count = int(self.elitism * self.population_size)
         self.on_evolution = None
         self.on_exit = None
@@ -22,22 +22,22 @@ class TSPGenetic:
     def setExitEvent(self, on_exit_update):
         self.on_exit = on_exit_update
 
-    def calculate_distance_matrix(self):
+    def calculateDistanceMatrix(self):
         # Initialize distance matrix : distance_matrix[i, j] = norm(cities[i] - cities[j])
         diff = self.cities[:, np.newaxis] - self.cities[np.newaxis, :]
         return np.linalg.norm(diff, axis=-1)
 
-    def generate_population(self):
+    def generatePopulation(self):
         # Each individual is a permutation of the cities
         population = [np.random.permutation(self.num_cities) for _ in range(self.population_size)]
-        distances = [self.compute_individual_distance(ind) for ind in population]
+        distances = [self.computeIndividualDistance(ind) for ind in population]
         return list(zip(population, distances))
 
-    def compute_individual_distance(self, individual):
+    def computeIndividualDistance(self, individual):
         shifted_indices = np.roll(individual, -1)
         return np.sum(self.distance_matrix[individual, shifted_indices])
 
-    def create_child(self, parent1, parent2):
+    def createChild(self, parent1, parent2):
         parent1, parent2 = parent1[0], parent2[0]
         start, end = sorted(random.sample(range(self.num_cities), 2))
         # Initialize child
@@ -53,7 +53,7 @@ class TSPGenetic:
                 current_pos = (current_pos + 1) % self.num_cities
 
         self.mutate(child)
-        return (child, self.compute_individual_distance(child))
+        return (child, self.computeIndividualDistance(child))
 
     def mutate(self, individual):
         if random.random() < self.mutation_rate:
@@ -67,7 +67,7 @@ class TSPGenetic:
         self.population = self.population[:self.elit_count]
 
         # Use the weights to select the fit individuals with higher probability
-        new_population = [self.create_child(*random.sample(self.population, 2)) for _ in range(self.population_size - self.elit_count)]
+        new_population = [self.createChild(*random.sample(self.population, 2)) for _ in range(self.population_size - self.elit_count)]
 
         # Combine the elite individuals with the new population
         self.population += new_population

@@ -1,5 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel, QFormLayout, QLineEdit, QSizePolicy, QDialog
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QWidget
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 
@@ -7,7 +6,6 @@ class PathEvolutionWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.initUI()
-        self.evolutions = []
 
     def initUI(self):
         self.setLayout(QVBoxLayout())
@@ -24,12 +22,10 @@ class PathEvolutionWidget(QWidget):
 
         self.previous_plot, = self.ax.plot([], [], 'r-')
 
-    def update_plot(self):
-        if self.evolutions:
-            points_x, points_y = self.evolutions.pop(0)
-            self.previous_plot.remove()
-            self.previous_plot, = self.ax.plot(list(points_x) + [points_x[0]], list(points_y) + [points_y[0]], 'r-')
-            self.canvas.draw()
+    def updatePlot(self, points_x, points_y):
+        self.previous_plot.remove()
+        self.previous_plot, = self.ax.plot(list(points_x) + [points_x[0]], list(points_y) + [points_y[0]], 'r-')
+        self.canvas.draw()
 
     def tspEnded(self):
         self.show_anim_button.show()

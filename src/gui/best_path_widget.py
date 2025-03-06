@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, QWidget, QLabel, QFormLayout, QLineEdit, QSizePolicy, QDialog
+from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, QWidget, QLabel
 from PyQt5.QtCore import Qt, QTimer
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
@@ -23,15 +23,14 @@ class BestPathWidget(QWidget):
         result_label.setAlignment(Qt.AlignHCenter)
         self.layout().addWidget(result_label)
 
-        self.make_legend()
-        self.make_graph()
+        self.makeLegend()
+        self.makeGraph()
+        self.makeButtons()
 
-        if PARAMS.animated:
-            self.make_buttons()
-        # else:
-        #     self.ax.plot(self.points_x, self.points_y, 'b-')
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.updatePlot)
 
-    def make_legend(self):
+    def makeLegend(self):
         legend_layout = QGridLayout()
         legend_layout.setAlignment(Qt.AlignLeft)
 
@@ -69,27 +68,27 @@ class BestPathWidget(QWidget):
         legend_layout.setSpacing(10)
         self.layout().addLayout(legend_layout)
 
-    def make_buttons(self):
+    def makeButtons(self):
         buttons_layout = QHBoxLayout()
 
         self.previous_button = QPushButton("Previous", self)
-        self.previous_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #39ED4B;")
-        self.previous_button.clicked.connect(self.previous_segment)
+        self.previous_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #A0A0A0;")
+        self.previous_button.clicked.connect(self.previousSegment)
         buttons_layout.addWidget(self.previous_button)
 
         self.play_button = QPushButton("Play", self)
-        play_button_bg_color = "#39ED4B" if PARAMS.auto_start else "#FF0000"
-        self.play_button.setStyleSheet(f"font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: {play_button_bg_color};")
+        self.play_button.setStyleSheet(f"font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #39ED4B;")
+        self.play_button.clicked.connect(self.playTimer)
         buttons_layout.addWidget(self.play_button)
 
         self.next_button = QPushButton("Next", self)
         self.next_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #39ED4B;")
-        self.next_button.clicked.connect(self.next_segment)
+        self.next_button.clicked.connect(self.nextSegment)
         buttons_layout.addWidget(self.next_button)
 
         self.layout().addLayout(buttons_layout)
 
-    def make_graph(self):
+    def makeGraph(self):
         self.fig, self.ax = plt.subplots()
         self.canvas = FigureCanvas(self.fig)
 
@@ -109,16 +108,15 @@ class BestPathWidget(QWidget):
         self.annot.set_visible(False)
         self.canvas.mpl_connect("motion_notify_event", self.hover)
 
-    def update_plot(self):
+    def updatePlot(self):
         if self.index < len(self.points_x) - 1:
-            self.next_segment()
+            self.nextSegment()
         else:
-            self.stop_timer()
+            self.stopTimer()
 
-    def next_segment(self):
+    def nextSegment(self):
         if self.index >= len(self.points_x) - 1:
             return
-        print(len(self.points_x))
         segment, = self.ax.plot(
             [self.points_x[self.index], self.points_x[self.index+1]],
             [self.points_y[self.index], self.points_y[self.index+1]],
@@ -133,28 +131,28 @@ class BestPathWidget(QWidget):
         self.segments.append(segment)
         self.canvas.draw()
         self.index += 1
-        self.update_buttons()
+        self.updateButtons()
 
-    def previous_segment(self):
+    def previousSegment(self):
         if self.index == 0:
             return
         self.segments.pop().remove()
         self.canvas.draw()
         self.index -= 1
-        self.update_buttons()
+        self.updateButtons()
 
-    def play_timer(self):
+    def playTimer(self):
         if self.index < len(self.points_x) - 1:
             self.timer.start(PARAMS.animation_speed)
-            self.play_button.clicked.connect(self.stop_timer)
-        self.update_buttons()
+            self.play_button.clicked.connect(self.stopTimer)
+        self.updateButtons()
 
-    def stop_timer(self):
+    def stopTimer(self):
         self.timer.stop()
-        self.play_button.clicked.connect(self.play_timer)
-        self.update_buttons()
+        self.play_button.clicked.connect(self.playTimer)
+        self.updateButtons()
 
-    def update_buttons(self):
+    def updateButtons(self):
         def set_button_style(button, text, color):
             button.setText(text)
             button.setStyleSheet(f"font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: {color};")
@@ -166,11 +164,11 @@ class BestPathWidget(QWidget):
             set_button_style(self.play_button, "Play", "#A0A0A0")
             set_button_style(self.next_button, "Next", "#A0A0A0")
         else:
-            # play_text = "Pause" if self.timer.isActive() else "Play" # No Timer
-            # set_button_style(self.play_button, play_text, "#39ED4B")
+            play_text = "Pause" if self.timer.isActive() else "Play"
+            set_button_style(self.play_button, play_text, "#39ED4B")
             set_button_style(self.next_button, "Next", "#39ED4B")
 
-    def update_annot(self, ind):
+    def updateAnnot(self, ind):
         x, y = self.points_x[ind], self.points_y[ind]
         self.annot.xy = (x, y)
         text = f"({x:.2f}, {y:.2f})"
@@ -183,10 +181,15 @@ class BestPathWidget(QWidget):
         if event.inaxes == self.ax:
             for i, (x, y) in enumerate(zip(self.points_x, self.points_y)):
                 if abs(x - event.xdata) < 0.01 and abs(y - event.ydata) < 0.01:
-                    self.update_annot(i)
+                    self.updateAnnot(i)
                     self.annot.set_visible(True)
                     self.canvas.draw_idle()
                     return
             if vis:
                 self.annot.set_visible(False)
                 self.canvas.draw_idle()
+
+    def showEvent(self, a0):
+        if PARAMS.auto_start_animation:
+            self.playTimer()
+        return super().showEvent(a0)

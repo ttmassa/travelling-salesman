@@ -1,3 +1,4 @@
+from PyQt5.QtWidgets import QApplication
 import sys
 from gui.main_window import *
 
