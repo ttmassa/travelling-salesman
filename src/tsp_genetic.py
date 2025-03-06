@@ -2,14 +2,14 @@ import numpy as np
 import random
 
 class TSPGenetic:
-    def __init__(self, num_cities, population_size, generations, mutation_rate, elitism, on_gen_update = None):
+    def __init__(self, num_cities, population_size, generations, mutation_rate, elitism, on_gen_update = None, pre_gen_cities = None):
         self.num_cities = num_cities
         self.population_size = population_size
         self.generations = generations
         self.mutation_rate = mutation_rate
         self.elitism = elitism
         self.on_gen_update = on_gen_update
-        self.cities = np.random.rand(num_cities, 2)
+        self.cities = pre_gen_cities if pre_gen_cities is not None else np.random.rand(num_cities, 2)
         self.distance_matrix = self.calculate_distance_matrix()
         self.population = self.generate_population()
         self.elit_count = int(self.elitism * self.population_size)
@@ -31,6 +31,7 @@ class TSPGenetic:
         return np.sum(self.distance_matrix[individual, shifted_indices])
 
     def create_child(self, parent1, parent2):
+        parent1, parent2 = parent1[0], parent2[0]
         start, end = sorted(random.sample(range(self.num_cities), 2))
         # Initialize child
         child = np.full(self.num_cities, -1)
@@ -56,11 +57,13 @@ class TSPGenetic:
 
     def evolve(self):
         # Perform selection
-        individuals, weights = zip(*self.population)
+        self.population = self.population[:self.elit_count]
+
         # Use the weights to select the fit individuals with higher probability
-        new_population = [self.create_child(*random.choices(individuals, map(lambda x: 1 / (2**x), weights), k=2)) for _ in range(self.population_size - self.elit_count)]
+        new_population = [self.create_child(*random.sample(self.population, 2)) for _ in range(self.population_size - self.elit_count)]
+
         # Combine the elite individuals with the new population
-        self.population = self.population[:self.elit_count] + new_population
+        self.population += new_population
 
     def run(self):
         best_individual = None
@@ -74,8 +77,8 @@ class TSPGenetic:
             if self.on_gen_update:
                 if self.on_gen_update(i, [w for (_, w) in self.population]):
                     return
-        print(f"Best route: {best_individual[0]}")
-        print(f"Best distance: {best_individual[1]}")
+        # print(f"Best route: {best_individual[0]}")
+        # print(f"Best distance: {best_individual[1]}")
 
         self.best_route, self.best_distance = best_individual
         self.is_ended = True

@@ -2,13 +2,13 @@ import numpy as np
 import random
 
 class TSPGenetic:
-    def __init__(self, num_cities, population_size, generations, mutation_rate, elitism, on_gen_update = None):
+    def __init__(self, num_cities, population_size, generations, mutation_rate, elitism, on_gen_update = None, pre_gen_cities = None):
         self.num_cities = num_cities
         self.population_size = population_size
         self.generations = generations
         self.mutation_rate = mutation_rate
         self.elitism = elitism
-        self.cities = np.random.rand(num_cities, 2)
+        self.cities = pre_gen_cities if pre_gen_cities is not None else np.random.rand(num_cities, 2)
         self.distance_matrix = self.calculate_distance_matrix()
         self.population = self.generate_population()
         self.on_gen_update = on_gen_update
@@ -89,8 +89,8 @@ class TSPGenetic:
         # print(self.cities)
         # for i, city in enumerate(self.cities):
         #     print(f"City {i}: {city}")
-        print(f"Best route: {best_route}")
-        print(f"Best distance: {best_distance}")
+        # print(f"Best route: {best_route}")
+        # print(f"Best distance: {best_distance}")
 
         self.best_route = best_route
         self.best_distance = best_distance
