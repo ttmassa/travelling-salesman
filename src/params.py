@@ -9,7 +9,7 @@ class Option:
 
     default_num_cities: int = 10
     default_population_size: int = 100
-    default_gen_count: int = 50
+    default_gen_count: int = 10
     default_mutation_rate: float = 0.01
     default_elitism: float = 0.1
 

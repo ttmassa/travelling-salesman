@@ -5,32 +5,30 @@ import matplotlib.pyplot as plt
 from params import PARAMS
 
 class BestPathWidget(QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self.initUI()
 
     # --- GRAPHICAL METHODS --- #
 
     def initUI(self):
-        layout = QVBoxLayout()
+        self.setLayout(QVBoxLayout())
 
         # Result label
-        result_label = QLabel(f"Best Distance: {self.best_distance}", self)
+        result_label = QLabel(f"Best Distance: ", self)
         result_label.setStyleSheet("font-size: 18px; font-weight: bold;")
         result_label.setAlignment(Qt.AlignHCenter)
-        layout.addWidget(result_label)
+        self.layout().addWidget(result_label)
 
-        self.make_legend(layout)
-        self.make_graph(layout)
+        self.make_legend()
+        self.make_graph()
 
         if PARAMS.animated:
-            self.make_buttons(layout)
-        else:
-            self.ax.plot(self.points_x, self.points_y, 'b-')
+            self.make_buttons(self.layout())
+        # else:
+        #     self.ax.plot(self.points_x, self.points_y, 'b-')
 
-        self.setLayout(self.layout)
-
-    def make_legend(self, layout):
+    def make_legend(self):
         legend_layout = QGridLayout()
         legend_layout.setAlignment(Qt.AlignLeft)
 
@@ -66,7 +64,7 @@ class BestPathWidget(QWidget):
         legend_layout.addWidget(start_color, 2, 1)
 
         legend_layout.setSpacing(10)
-        layout.addLayout(legend_layout)
+        self.layout().addLayout(legend_layout)
 
     def make_buttons(self):
         buttons_layout = QHBoxLayout()
@@ -86,7 +84,7 @@ class BestPathWidget(QWidget):
         self.next_button.clicked.connect(self.next_segment)
         buttons_layout.addWidget(self.next_button)
 
-        self.layout.addLayout(buttons_layout)
+        self.layout().addLayout(buttons_layout)
 
     def make_graph(self):
         self.fig, self.ax = plt.subplots()
@@ -94,10 +92,10 @@ class BestPathWidget(QWidget):
 
         self.vertices = self.ax.plot(self.points_x, self.points_y, 'ro') + \
                         self.ax.plot(self.points_x[:1], self.points_y[:1], 'go')
-        self.ax.set_xlim(min(self.points_x) - 0.05, max(self.points_x) + 0.05)
-        self.ax.set_ylim(min(self.points_y) - 0.05, max(self.points_y) + 0.05)
+        # self.ax.set_xlim(min(self.points_x) - 0.05, max(self.points_x) + 0.05)
+        # self.ax.set_ylim(min(self.points_y) - 0.05, max(self.points_y) + 0.05)
 
-        self.layout.addWidget(self.canvas)
+        self.layout().addWidget(self.canvas)
 
         # Add tooltips
         self.annot = self.ax.annotate("", xy=(0,0), xytext=(20,20),

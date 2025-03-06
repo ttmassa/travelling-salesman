@@ -2,18 +2,25 @@ import numpy as np
 import random
 
 class TSPGenetic:
-    def __init__(self, num_cities, population_size, generations, mutation_rate, elitism, on_gen_update = None, pre_gen_cities = None):
+    def __init__(self, num_cities, population_size, generations, mutation_rate, elitism, pre_gen_cities = None):
         self.num_cities = num_cities
         self.population_size = population_size
         self.generations = generations
         self.mutation_rate = mutation_rate
         self.elitism = elitism
-        self.on_gen_update = on_gen_update
         self.cities = pre_gen_cities if pre_gen_cities is not None else np.random.rand(num_cities, 2)
         self.distance_matrix = self.calculate_distance_matrix()
         self.population = self.generate_population()
         self.elit_count = int(self.elitism * self.population_size)
+        self.on_evolution = None
+        self.on_exit = None
         self.is_ended = False
+
+    def setEvolutionEvent(self, on_gen_update):
+        self.on_evolution = on_gen_update
+
+    def setExitEvent(self, on_exit_update):
+        self.on_exit = on_exit_update
 
     def calculate_distance_matrix(self):
         # Initialize distance matrix : distance_matrix[i, j] = norm(cities[i] - cities[j])
@@ -74,11 +81,13 @@ class TSPGenetic:
             current_best_individual = self.population[0]
             if not best_individual or current_best_individual[1] < best_individual[1]:
                 best_individual = current_best_individual
-            if self.on_gen_update:
-                if self.on_gen_update(i, [w for (_, w) in self.population], zip(*map(lambda city: self.cities[city], self.population[0][0]))):
+            if self.on_evolution:
+                if self.on_evolution(i, [w for (_, w) in self.population], zip(*map(lambda city: self.cities[city], self.population[0][0]))):
                     return
         # print(f"Best route: {best_individual[0]}")
         # print(f"Best distance: {best_individual[1]}")
 
         self.best_route, self.best_distance = best_individual
         self.is_ended = True
+        if self.on_exit:
+            self.on_exit()

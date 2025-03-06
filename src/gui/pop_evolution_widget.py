@@ -4,20 +4,23 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 
 class PopEvolutionWidget(QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self.initUI()
         self.evolutions = []
 
     def initUI(self):
-        layout = QVBoxLayout()
+        self.setLayout(QVBoxLayout())
 
         self.fig, self.ax = plt.subplots()
         self.canvas = FigureCanvas(self.fig)
-        layout.addWidget(self.canvas)
+        self.layout().addWidget(self.canvas)
 
-        self.setLayout(layout)
-        self.canvas.draw()
+        self.close_button = QPushButton("Close Evolution Widget", self)
+        self.close_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #ED394B;")
+        self.close_button.clicked.connect(self.parent().closeEvolutionWidget)
+        self.close_button.hide()
+        self.layout().addWidget(self.close_button)
 
     def update_plot(self):
         if self.evolutions:
@@ -25,3 +28,5 @@ class PopEvolutionWidget(QWidget):
             self.ax.plot([gen_index] * len(points_y), points_y, 'ro')
             self.canvas.draw()
 
+    def tspEnded(self):
+        self.close_button.show()
