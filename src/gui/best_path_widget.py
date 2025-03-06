@@ -10,6 +10,7 @@ class BestPathWidget(QWidget):
         self.points_x, self.points_y = points_x, points_y
         self.index = 0
         self.segments = []
+        self.best_distance = -1
         self.initUI()
 
     # --- GRAPHICAL METHODS --- #
@@ -18,10 +19,10 @@ class BestPathWidget(QWidget):
         self.setLayout(QVBoxLayout())
 
         # Result label
-        result_label = QLabel(f"Best Distance: ", self)
-        result_label.setStyleSheet("font-size: 18px; font-weight: bold;")
-        result_label.setAlignment(Qt.AlignHCenter)
-        self.layout().addWidget(result_label)
+        self.distance_label = QLabel("Best Distance: ", self)
+        self.distance_label.setStyleSheet("font-size: 18px; font-weight: bold;")
+        self.distance_label.setAlignment(Qt.AlignHCenter)
+        self.layout().addWidget(self.distance_label)
 
         self.makeLegend()
         self.makeGraph()
@@ -190,6 +191,7 @@ class BestPathWidget(QWidget):
                 self.canvas.draw_idle()
 
     def showEvent(self, a0):
+        self.distance_label.setText(f"Best Distance: {self.best_distance}")
         if PARAMS.auto_start_animation:
             self.playTimer()
         return super().showEvent(a0)

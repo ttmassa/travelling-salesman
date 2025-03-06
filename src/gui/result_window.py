@@ -51,7 +51,7 @@ class ResultWindow(QDialog):
     def threadedReceiveGeneration(self, gen_idx, gen_distances, best_path):
         if self.show_evolution:
             self.execution_queue.append( (self.pop_evolution_widget.updatePlot, (gen_idx, gen_distances)) )
-            self.execution_queue.append( (self.path_evolution_widget.updatePlot, best_path) )
+            self.execution_queue.append( (self.path_evolution_widget.updatePlot, (*best_path, gen_distances[0])) )
         else:
             QTimer.singleShot(0, lambda val=gen_idx: self.progress_bar.setValue(val))
         return self.shouldClose
@@ -86,6 +86,7 @@ class ResultWindow(QDialog):
         self.points_y = [self.tsp_genetic.cities[e][1] for e in self.tsp_genetic.best_path] + [self.tsp_genetic.cities[self.tsp_genetic.best_path[0]][1]]
         self.best_path_widget.points_x = self.points_x
         self.best_path_widget.points_y = self.points_y
+        self.best_path_widget.best_distance = self.tsp_genetic.best_distance
 
         if not self.show_evolution:
             self.progress_bar.close()
