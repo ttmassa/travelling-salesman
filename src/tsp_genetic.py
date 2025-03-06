@@ -87,7 +87,7 @@ class TSPGenetic:
         # print(f"Best route: {best_individual[0]}")
         # print(f"Best distance: {best_individual[1]}")
 
-        self.best_route, self.best_distance = best_individual
+        self.best_path, self.best_distance = best_individual
         self.is_ended = True
         if self.on_exit:
             self.on_exit()

@@ -5,8 +5,11 @@ import matplotlib.pyplot as plt
 from params import PARAMS
 
 class BestPathWidget(QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, points_x, points_y):
         super().__init__(parent)
+        self.points_x, self.points_y = points_x, points_y
+        self.index = 0
+        self.segments = []
         self.initUI()
 
     # --- GRAPHICAL METHODS --- #
@@ -24,7 +27,7 @@ class BestPathWidget(QWidget):
         self.make_graph()
 
         if PARAMS.animated:
-            self.make_buttons(self.layout())
+            self.make_buttons()
         # else:
         #     self.ax.plot(self.points_x, self.points_y, 'b-')
 
@@ -92,8 +95,9 @@ class BestPathWidget(QWidget):
 
         self.vertices = self.ax.plot(self.points_x, self.points_y, 'ro') + \
                         self.ax.plot(self.points_x[:1], self.points_y[:1], 'go')
-        # self.ax.set_xlim(min(self.points_x) - 0.05, max(self.points_x) + 0.05)
-        # self.ax.set_ylim(min(self.points_y) - 0.05, max(self.points_y) + 0.05)
+
+        self.ax.set_xlim(min(self.points_x) - 0.05, max(self.points_x) + 0.05)
+        self.ax.set_ylim(min(self.points_y) - 0.05, max(self.points_y) + 0.05)
 
         self.layout().addWidget(self.canvas)
 
@@ -103,7 +107,6 @@ class BestPathWidget(QWidget):
                                       bbox=dict(boxstyle="round", fc="w"),
                                       arrowprops=dict(arrowstyle="->"))
         self.annot.set_visible(False)
-
         self.canvas.mpl_connect("motion_notify_event", self.hover)
 
     def update_plot(self):
@@ -115,6 +118,7 @@ class BestPathWidget(QWidget):
     def next_segment(self):
         if self.index >= len(self.points_x) - 1:
             return
+        print(len(self.points_x))
         segment, = self.ax.plot(
             [self.points_x[self.index], self.points_x[self.index+1]],
             [self.points_y[self.index], self.points_y[self.index+1]],
@@ -162,8 +166,8 @@ class BestPathWidget(QWidget):
             set_button_style(self.play_button, "Play", "#A0A0A0")
             set_button_style(self.next_button, "Next", "#A0A0A0")
         else:
-            play_text = "Pause" if self.timer.isActive() else "Play"
-            set_button_style(self.play_button, play_text, "#39ED4B")
+            # play_text = "Pause" if self.timer.isActive() else "Play" # No Timer
+            # set_button_style(self.play_button, play_text, "#39ED4B")
             set_button_style(self.next_button, "Next", "#39ED4B")
 
     def update_annot(self, ind):

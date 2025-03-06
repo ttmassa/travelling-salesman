@@ -26,15 +26,18 @@ class ResultWindow(QDialog):
     def initUI(self):
         layout = QHBoxLayout()
 
+        points_x, points_y = zip(*self.tsp_genetic.cities)
+
         self.pop_evolution_widget = PopEvolutionWidget(self)
         layout.addWidget(self.pop_evolution_widget)
 
         self.path_evolution_widget = PathEvolutionWidget(self)
-        self.path_evolution_widget.ax.plot(*zip(*self.tsp_genetic.cities), 'yo')
+        self.path_evolution_widget.ax.plot(points_x, points_y, 'yo')
         layout.addWidget(self.path_evolution_widget)
 
-        # self.best_path_widget = BestPathWidget(self)
-        # layout.addWidget(self.best_path_widget)
+        self.best_path_widget = BestPathWidget(self, points_x, points_y)
+        self.best_path_widget.hide()
+        layout.addWidget(self.best_path_widget)
 
         self.setLayout(layout)
 
@@ -56,7 +59,7 @@ class ResultWindow(QDialog):
 
     def showAnimation(self):
         self.path_evolution_widget.close()
-        # self.layout()
+        self.best_path_widget.show()
 
     def closeEvent(self, a0):
         self.shouldClose = True
@@ -66,3 +69,9 @@ class ResultWindow(QDialog):
     def tspEnded(self):
         self.pop_evolution_widget.tspEnded()
         self.path_evolution_widget.tspEnded()
+
+        self.points_x = [self.tsp_genetic.cities[e][0] for e in self.tsp_genetic.best_path] + [self.tsp_genetic.cities[self.tsp_genetic.best_path[0]][0]]
+        self.points_y = [self.tsp_genetic.cities[e][1] for e in self.tsp_genetic.best_path] + [self.tsp_genetic.cities[self.tsp_genetic.best_path[0]][1]]
+        self.best_path_widget.points_x = self.points_x
+        self.best_path_widget.points_y = self.points_y
+        print(len(self.points_x))
