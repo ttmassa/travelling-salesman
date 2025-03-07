@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel, QFormLayout, QLineEdit, QSizePolicy, QCheckBox
 from PyQt5.QtCore import Qt
 from tsp_genetic import TSPGenetic
+from tsp_algo import TSPPrim
 from gui.result_window import ResultWindow
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
 from params import PARAMS
@@ -90,6 +91,7 @@ class MainWindow(QMainWindow):
         elitism = float(self.elitism_input.text()) if self.elitism_input.text() else PARAMS.default_elitism
 
         tsp_genetic = TSPGenetic(num_cities, population_size, generations, mutation_rate, elitism)
+        # tsp_genetic = TSPPrim(num_cities)
 
         self.hide()
         ResultWindow(tsp_genetic, self.show_evolution_input.isChecked()).exec()
