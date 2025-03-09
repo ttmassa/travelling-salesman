@@ -1,10 +1,8 @@
-from PyQt5.QtWidgets import QDialog, QHBoxLayout, QProgressBar
-from PyQt5.QtCore import QTimer
 import threading
+from PyQt5.QtWidgets import QDialog, QHBoxLayout
+from PyQt5.QtCore import QTimer
 from params import PARAMS
-
 from gui.pop_evolution_widget import PopEvolutionWidget
-from gui.path_evolution_widget import PathEvolutionWidget
 from gui.best_path_widget import BestPathWidget
 
 class ResultWindow(QDialog):
@@ -31,33 +29,24 @@ class ResultWindow(QDialog):
         self.setLayout(QHBoxLayout())
 
         points_x, points_y = zip(*self.tsp_genetic.cities)
+        self.best_path_widget = BestPathWidget(self, points_x, points_y)
+        self.layout().addWidget(self.best_path_widget)
 
         if self.show_evolution:
             self.pop_evolution_widget = PopEvolutionWidget(self)
             self.layout().addWidget(self.pop_evolution_widget)
 
-            self.path_evolution_widget = PathEvolutionWidget(self)
-            self.path_evolution_widget.ax.plot(points_x, points_y, 'yo')
-            self.layout().addWidget(self.path_evolution_widget)
-        else:
-            self.progress_bar = QProgressBar(self)
-            self.progress_bar.setRange(0, self.tsp_genetic.generations)
-            self.layout().addWidget(self.progress_bar)
-
-        self.best_path_widget = BestPathWidget(self, points_x, points_y)
-        self.best_path_widget.hide()
-        self.layout().addWidget(self.best_path_widget)
-
-    def threadedReceiveGeneration(self, gen_idx, gen_distances, best_path):
+    def threadedReceiveGeneration(self, gen_idx, gen_distances, best_path, best_distance):
+        self.execution_queue.append((
+            self.best_path_widget.addBestPath, 
+            (best_path, best_distance, self.tsp_genetic.cities.copy())
+        ))
         if self.show_evolution:
-            self.execution_queue.append( (self.pop_evolution_widget.updatePlot, (gen_idx, gen_distances)) )
-            self.execution_queue.append( (self.path_evolution_widget.updatePlot, (*best_path, gen_distances[0])) )
-        else:
-            QTimer.singleShot(0, lambda val=gen_idx: self.progress_bar.setValue(val))
+            self.execution_queue.append((self.pop_evolution_widget.updatePlot, (gen_idx, gen_distances)))
         return self.shouldClose
 
     def threadedTSPEnded(self):
-        self.execution_queue.insert( 0, (self.tspEnded, ()) )
+        self.execution_queue.insert(0, (self.tspEnded, ()))
 
     def timerUpdate(self):
         if self.execution_queue:
@@ -69,7 +58,6 @@ class ResultWindow(QDialog):
         self.adjustSize()
 
     def showAnimation(self):
-        self.path_evolution_widget.close()
         self.best_path_widget.show()
 
     def closeEvent(self, a0):
@@ -80,15 +68,10 @@ class ResultWindow(QDialog):
     def tspEnded(self):
         if self.show_evolution:
             self.pop_evolution_widget.tspEnded()
-            self.path_evolution_widget.tspEnded()
 
-        self.points_x = [self.tsp_genetic.cities[e][0] for e in self.tsp_genetic.best_path] + [self.tsp_genetic.cities[self.tsp_genetic.best_path[0]][0]]
-        self.points_y = [self.tsp_genetic.cities[e][1] for e in self.tsp_genetic.best_path] + [self.tsp_genetic.cities[self.tsp_genetic.best_path[0]][1]]
-        self.best_path_widget.points_x = self.points_x
-        self.best_path_widget.points_y = self.points_y
-        self.best_path_widget.best_distance = self.tsp_genetic.best_distance
-
-        if not self.show_evolution:
-            self.progress_bar.close()
-            self.best_path_widget.show()
-            self.adjustSize()
+        self.best_path_widget.addBestPath(
+            self.tsp_genetic.best_path,
+            self.tsp_genetic.best_distance,
+            self.tsp_genetic.cities.copy()
+        )
+        self.adjustSize()

@@ -82,12 +82,10 @@ class TSPGenetic:
             if not best_individual or current_best_individual[1] < best_individual[1]:
                 best_individual = current_best_individual
             if self.on_evolution:
-                if self.on_evolution(i, [w for (_, w) in self.population], zip(*map(lambda city: self.cities[city], self.population[0][0]))):
-                    return
-        # print(f"Best route: {best_individual[0]}")
-        # print(f"Best distance: {best_individual[1]}")
-
+                self.on_evolution(i, [ind[1] for ind in self.population], best_individual[0], best_individual[1])
         self.best_path, self.best_distance = best_individual
+        # print("Best path:", self.best_path)
+        # print("Best distance:", self.best_distance)
         self.is_ended = True
         if self.on_exit:
             self.on_exit()
