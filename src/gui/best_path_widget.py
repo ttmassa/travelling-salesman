@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, QWidget, QLabel
+from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, QWidget, QLabel, QProgressBar
 from PyQt5.QtCore import Qt, QTimer
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
@@ -30,6 +30,7 @@ class BestPathWidget(QWidget):
         self.makeLegend()
         self.makeGraph()
         self.makeButtons()
+        self.makeProgressBar()
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.updatePlot)
@@ -91,6 +92,12 @@ class BestPathWidget(QWidget):
         self.annot.set_visible(False)
         self.canvas.mpl_connect("motion_notify_event", self.hover)
 
+    def makeProgressBar(self):
+        self.progress_bar = QProgressBar(self)
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
+        self.layout().addWidget(self.progress_bar)
+
     # --- UTILITY METHODS --- #
 
     def updatePlot(self):
@@ -100,24 +107,30 @@ class BestPathWidget(QWidget):
             self.stopTimer()
 
     def makeButtons(self):
-        buttons_layout = QHBoxLayout()
+        self.buttons_layout = QHBoxLayout()
 
         self.previous_button = QPushButton("Previous", self)
         self.previous_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #A0A0A0;")
         self.previous_button.clicked.connect(self.previousSegment)
-        buttons_layout.addWidget(self.previous_button)
+        self.buttons_layout.addWidget(self.previous_button)
 
         self.play_button = QPushButton("Play", self)
         self.play_button.setStyleSheet(f"font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #39ED4B;")
         self.play_button.clicked.connect(self.playTimer)
-        buttons_layout.addWidget(self.play_button)
+        self.buttons_layout.addWidget(self.play_button)
 
         self.next_button = QPushButton("Next", self)
         self.next_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #39ED4B;")
         self.next_button.clicked.connect(self.nextSegment)
-        buttons_layout.addWidget(self.next_button)
+        self.buttons_layout.addWidget(self.next_button)
 
-        self.layout().addLayout(buttons_layout)
+        self.layout().addLayout(self.buttons_layout)
+        self.setButtonsVisible(False)  # Hide buttons initially
+
+    def setButtonsVisible(self, visible):
+        self.previous_button.setVisible(visible)
+        self.play_button.setVisible(visible)
+        self.next_button.setVisible(visible)
 
     def previousSegment(self):
         if self.index == 0:
@@ -230,3 +243,8 @@ class BestPathWidget(QWidget):
             self.distance_label.setText(f"Best Distance: {self.best_distance}")
             self.drawPath(path, cities)
             self.updateButtons()
+
+    def tspEnded(self):
+        self.progress_bar.setVisible(False)
+        self.setButtonsVisible(True)
+        self.updateButtons()

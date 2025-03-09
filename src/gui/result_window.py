@@ -47,6 +47,7 @@ class ResultWindow(QDialog):
 
     def threadedTSPEnded(self):
         self.execution_queue.insert(0, (self.tspEnded, ()))
+        self.execution_queue.insert(0, (self.best_path_widget.tspEnded, ()))
 
     def timerUpdate(self):
         if self.execution_queue:
