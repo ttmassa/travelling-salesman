@@ -1,98 +1,89 @@
-from PyQt5.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel, QFormLayout, QLineEdit, QSizePolicy, QCheckBox
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMainWindow, QWidget, QHBoxLayout
+from PyQt5.QtCore import QTimer
+import threading
 from tsp_genetic import TSPGenetic
-from tsp_algo import TSPPrim
-from gui.result_window import ResultWindow
-from PyQt5.QtGui import QIntValidator, QDoubleValidator
+from gui.settings_widget import SettingsWidget
+from gui.map_widget import MapWidget
+from gui.evolution_widget import EvolutionWidget
 from params import PARAMS
 
-class MainWindow(QMainWindow):
+class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("TSP Genetic Algorithm")
-        self.move(100, 100)
-        self.initUI()
+        self._window = QMainWindow()
+        self._window.setWindowTitle("TSP Genetic Algorithm")
+        self._window.move(100, 100)
 
-    def initUI(self):
-        layout = QVBoxLayout()
+        self.setLayout(QHBoxLayout())
 
-        # Parameters layout
-        parameters_layout = QVBoxLayout()
-        parameters_layout.setAlignment(Qt.AlignHCenter)
 
-        # Parameters label
-        self.label = QLabel("Parameters", self)
-        self.label.setStyleSheet("font-size: 18px; text-decoration: underline;")
-        self.label.setAlignment(Qt.AlignHCenter)
-        self.label.setSizePolicy(self.label.sizePolicy().horizontalPolicy(), QSizePolicy.Fixed)
-        parameters_layout.addWidget(self.label)
+        self.settings = SettingsWidget(self)
+        self.map = MapWidget(self)
+        self.evolution = EvolutionWidget(self)
+        self.layout().addWidget(self.evolution)
+        self.layout().addWidget(self.settings)
+        self.layout().addWidget(self.map)
 
-        parameters_layout.addSpacing(30)
+        self._window.setCentralWidget(self)
 
-        # Form layout for parameters
-        form_layout = QFormLayout()
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.timerUpdate)
+        self.execution_queue = []
+        self.tsp_genetic = None
+        self.show_evolution = False
+        self.close_tsp = False
 
-        # Number of cities
-        self.num_cities_input = QLineEdit(self)
-        self.num_cities_input.setPlaceholderText(f"default: {PARAMS.default_num_cities}")
-        self.num_cities_input.setValidator(QIntValidator(1, 999999, self))
-        form_layout.addRow("Number of cities:", self.num_cities_input)
+        self._window.show()
 
-        # Population size
-        self.population_size_input = QLineEdit(self)
-        self.population_size_input.setPlaceholderText(f"default: {PARAMS.default_population_size}")
-        self.population_size_input.setValidator(QIntValidator(1, 999999, self))
-        form_layout.addRow("Population size:", self.population_size_input)
+    def timerUpdate(self):
+        while self.execution_queue:
+            fun, args = self.execution_queue.pop(0)
+            if not fun(*args):
+                break
 
-        # Number of generations
-        self.generations_input = QLineEdit(self)
-        self.generations_input.setPlaceholderText(f"default: {PARAMS.default_gen_count}")
-        self.generations_input.setValidator(QIntValidator(1, 999999, self))
-        form_layout.addRow("Number of generations:", self.generations_input)
+    def runAlgorithm(self, num_cities, population_size, generations, mutation_rate, elitism, show_evolution, cities):
+        if self.tsp_genetic is not None:
+            self.close_tsp = True
+            self.tsp_thread.join()
+            self.close_tsp = False
 
-        # Mutation rate
-        self.mutation_rate_input = QLineEdit(self)
-        self.mutation_rate_input.setPlaceholderText(f"default: {PARAMS.default_mutation_rate}")
-        self.mutation_rate_input.setValidator(QDoubleValidator(0, 1, 10, self))
-        form_layout.addRow("Mutation rate:", self.mutation_rate_input)
+        self.execution_queue.clear()
 
-        # Elitism
-        self.elitism_input = QLineEdit(self)
-        self.elitism_input.setPlaceholderText(f"default: {PARAMS.default_elitism}")
-        self.elitism_input.setValidator(QDoubleValidator(0, 1, 10, self))
-        form_layout.addRow("Elitism:", self.elitism_input)
+        # self.settings.hide()
+        if show_evolution:
+            self.evolution.clear()
+            self.evolution.show()
+            self.map.show()
+        else:
+            self.evolution.hide()
+            self.settings.progress_bar.setRange(0, generations)
+            self.settings.progress_bar.show()
+        self._window.adjustSize()
 
-        # Show Evolution
-        self.show_evolution_input = QCheckBox(self)
-        self.show_evolution_input.setChecked(PARAMS.default_show_evolution)
-        form_layout.addRow("Show evolution:", self.show_evolution_input)
-
-        parameters_layout.addLayout(form_layout)
-        layout.addLayout(parameters_layout)
-
-        layout.addSpacing(50)
-
-        # Run button
-        self.run_button = QPushButton("Run TSP Algorithm", self)
-        self.run_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #39ED4B;")
-        self.run_button.clicked.connect(self.runAlgorithm)
-        layout.addWidget(self.run_button)
-
-        container = QWidget()
-        container.setLayout(layout)
-        self.setCentralWidget(container)
-
-    def runAlgorithm(self):
-        # Get the parameters from the input fields
-        num_cities = int(self.num_cities_input.text()) if self.num_cities_input.text() else PARAMS.default_num_cities
-        population_size = int(self.population_size_input.text()) if self.population_size_input.text() else PARAMS.default_population_size
-        generations = int(self.generations_input.text()) if self.generations_input.text() else PARAMS.default_gen_count
-        mutation_rate = float(self.mutation_rate_input.text()) if self.mutation_rate_input.text() else PARAMS.default_mutation_rate
-        elitism = float(self.elitism_input.text()) if self.elitism_input.text() else PARAMS.default_elitism
-
-        tsp_genetic = TSPGenetic(num_cities, population_size, generations, mutation_rate, elitism)
+        self.show_evolution = show_evolution
+        self.tsp_genetic = TSPGenetic(num_cities, population_size, generations, mutation_rate, elitism, pre_gen_cities=cities, evolution_event=self.threadedReceiveGeneration, exit_event=self.threadedTSPEnded)
         # tsp_genetic = TSPPrim(num_cities)
 
-        self.hide()
-        ResultWindow(tsp_genetic, self.show_evolution_input.isChecked()).exec()
-        self.show()
+        self.map.setCities(*zip(*self.tsp_genetic.cities))
+        self.timer.start(PARAMS.evolution_animation_speed)
+
+        self.tsp_thread = threading.Thread(target=self.tsp_genetic.run)
+        self.tsp_thread.start()
+
+    def threadedReceiveGeneration(self, gen_idx, population):
+        if self.show_evolution:
+            self.execution_queue.append( (self.evolution.updatePlot, (gen_idx, population, self.tsp_genetic.elit_count)) )
+            self.execution_queue.append( (self.map.updatePlot, (gen_idx, *population[0])) )
+        else:
+            self.execution_queue.append( (lambda val: self.settings.progress_bar.setValue(val) or True, (gen_idx,)) )
+        return self.close_tsp
+
+    def threadedTSPEnded(self):
+        self.execution_queue.insert( 0, (self.tspEnded, ()) )
+
+    def tspEnded(self):
+        if not self.show_evolution:
+            self.map.updatePlot(0, self.tsp_genetic.best_path, self.tsp_genetic.best_distance)
+            self.settings.progress_bar.hide()
+            self.map.show()
+            self._window.adjustSize()
