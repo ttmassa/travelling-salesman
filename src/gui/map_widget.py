@@ -6,6 +6,7 @@ class MapWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.paths = []
+        self.path_index = 0
         self.cities_x, self.cities_y = [], []
 
         # === INIT UI ===
@@ -15,7 +16,7 @@ class MapWidget(QWidget):
         self.canvas = FigureCanvas(self.fig)
         self.ax.set_xlabel("longitude")
         self.ax.set_ylabel("latitude")
-        self.ax.set_title("Current Best Distance")
+        self.ax.set_title("Path")
         self.edges = self.ax.plot([], [], 'go', label="Start City") + self.ax.plot([], [], 'ro', label="City")
         self.vertices = self.ax.plot([], [], 'b-', label="Path")
         self.ax.legend()
@@ -24,17 +25,19 @@ class MapWidget(QWidget):
         self.buttons = QWidget()
         buttons_layout = QHBoxLayout()
 
-        self.previous_button = QPushButton("Previous")
-        self.previous_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
-        buttons_layout.addWidget(self.previous_button)
+        previous_button = QPushButton("Previous")
+        previous_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
+        previous_button.clicked.connect(self.previousPath)
+        buttons_layout.addWidget(previous_button)
 
-        self.next_button = QPushButton("next")
-        self.next_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
-        buttons_layout.addWidget(self.next_button)
+        next_button = QPushButton("next")
+        next_button.clicked.connect(self.nextPath)
+        next_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
+        buttons_layout.addWidget(next_button)
 
-        self.play_button = QPushButton("Play")
-        self.play_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
-        buttons_layout.addWidget(self.play_button)
+        play_button = QPushButton("Play")
+        play_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
+        buttons_layout.addWidget(play_button)
 
         buttons_layout.setContentsMargins(0, 0, 0, 0)
         self.buttons.setLayout(buttons_layout)
@@ -62,8 +65,22 @@ class MapWidget(QWidget):
         self.vertices = self.ax.plot(list(points_x) + [points_x[0]], list(points_y) + [points_y[0]], 'b-')
         self.canvas.draw()
 
+    def previousPath(self):
+        if self.path_index <= 0:
+            return
+        self.path_index -= 1
+        self.setPath(self.paths[self.path_index])
+
+    def nextPath(self):
+        if self.path_index >= len(self.paths) - 1:
+            return
+        self.path_index += 1
+        self.setPath(self.paths[self.path_index])
+
     def updatePlot(self, generation, path, distance):
-        self.ax.set_title(f"Current Best Distance : {distance:.5f}")
+        self.ax.set_title(f"Path Distance : {distance:.5f}")
         self.setPath(path)
+        self.paths.append(path)
 
         self.buttons.show()
+

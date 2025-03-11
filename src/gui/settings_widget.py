@@ -79,6 +79,7 @@ class SettingsWidget(QWidget):
 
         self.export_button = QPushButton("Export data", self)
         self.export_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #CDCDDD;")
+        self.export_button.hide()
         self.layout().addWidget(self.export_button)
 
         self.layout().addSpacing(50)
