@@ -14,18 +14,9 @@ class MainWindow(QWidget):
         self._window = QMainWindow()
         self._window.setWindowTitle("TSP Genetic Algorithm")
         self._window.move(100, 100)
-
-        self.setLayout(QHBoxLayout())
-
-
-        self.settings = SettingsWidget(self)
-        self.map = MapWidget(self)
-        self.evolution = EvolutionWidget(self)
-        self.layout().addWidget(self.evolution)
-        self.layout().addWidget(self.settings)
-        self.layout().addWidget(self.map)
-
         self._window.setCentralWidget(self)
+
+        self.initUI()
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.timerUpdate)
@@ -35,6 +26,16 @@ class MainWindow(QWidget):
         self.close_tsp = False
 
         self._window.show()
+
+    def initUI(self):
+        self.setLayout(QHBoxLayout())
+
+        self.settings = SettingsWidget(self)
+        self.map = MapWidget(self)
+        self.evolution = EvolutionWidget(self)
+        self.layout().addWidget(self.settings)
+        self.layout().addWidget(self.map)
+        self.layout().addWidget(self.evolution)
 
     def timerUpdate(self):
         while self.execution_queue:

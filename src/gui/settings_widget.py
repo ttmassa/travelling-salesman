@@ -1,14 +1,15 @@
 from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QWidget, QLabel, QFormLayout, QLineEdit, QSizePolicy, QCheckBox, QProgressBar
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
-from PyQt5.QtCore import Qt, QPropertyAnimation, QRect
+from PyQt5.QtCore import Qt
 from params import PARAMS
 
 class SettingsWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
+        self.initUI()
 
-        # INIT UI
 
+    def initUI(self):
         self.setLayout(QVBoxLayout())
         self.layout().setAlignment(Qt.AlignHCenter)
 

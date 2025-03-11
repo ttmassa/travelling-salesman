@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QWidget, QHBoxLayout
+from PyQt5.QtCore import QTimer
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 
@@ -9,7 +10,9 @@ class MapWidget(QWidget):
         self.path_index = 0
         self.cities_x, self.cities_y = [], []
 
-        # === INIT UI ===
+        self.initUI()
+
+    def initUI(self):
         self.setLayout(QVBoxLayout())
 
         self.fig, self.ax = plt.subplots()
@@ -25,24 +28,26 @@ class MapWidget(QWidget):
         self.path_control_buttons = QWidget()
         path_buttons_layout = QHBoxLayout()
 
-        self.previous_button = QPushButton("Previous")
-        self.previous_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
-        self.previous_button.clicked.connect(self.previousPath)
+        self.previous_button = self.make_button("Previous", self.previousPath)
         path_buttons_layout.addWidget(self.previous_button)
 
-        self.next_button = QPushButton("next")
-        self.next_button.clicked.connect(self.nextPath)
-        self.next_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
-        path_buttons_layout.addWidget(self.next_button)
-
-        self.play_button = QPushButton("Play")
-        self.play_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
+        self.play_button = self.make_button("Play")
         path_buttons_layout.addWidget(self.play_button)
+
+        self.next_button = self.make_button("Next", self.nextPath)
+        path_buttons_layout.addWidget(self.next_button)
 
         path_buttons_layout.setContentsMargins(0, 0, 0, 0)
         self.path_control_buttons.setLayout(path_buttons_layout)
         self.path_control_buttons.hide()
         self.layout().addWidget(self.path_control_buttons)
+
+    def make_button(self, text, callback=None):
+        button = QPushButton(text)
+        button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
+        button.clicked.connect(callback) if callback else None
+
+        return button
 
     def remove(self, obj, count):
         for i in range(count):
@@ -50,7 +55,10 @@ class MapWidget(QWidget):
 
     def setCities(self, points_x, points_y):
         self.remove(self.edges, len(self.edges))
-        self.edges = self.ax.plot(points_x, points_y, 'ro', label="City")
+        if points_x and points_y:
+            # Start city
+            self.edges = self.ax.plot(points_x[0], points_y[0], 'go', label="Start City")
+            self.edges += self.ax.plot(points_x[1:], points_y[1:], 'ro', label="City")
         self.canvas.draw()
         self.cities_x, self.cities_y = points_x, points_y
 
@@ -58,11 +66,32 @@ class MapWidget(QWidget):
         self.cities_x[city], self.cities_y[city] = x, y
         self.setCities(self.cities_x, self.cities_y)
 
+    def calculateDistance(self, path):
+        distance = 0
+        for i in range(len(path) - 1):
+            x1, y1 = self.cities_x[path[i]], self.cities_y[path[i]]
+            x2, y2 = self.cities_x[path[i + 1]], self.cities_y[path[i + 1]]
+            distance += ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+        # Add distance from last city back to the first city
+        x1, y1 = self.cities_x[path[-1]], self.cities_y[path[-1]]
+        x2, y2 = self.cities_x[path[0]], self.cities_y[path[0]]
+        distance += ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+        return distance
+
     def setPath(self, path):
         self.remove(self.vertices, len(self.vertices))
         points_x = [self.cities_x[city] for city in path]
         points_y = [self.cities_y[city] for city in path]
         self.vertices = self.ax.plot(list(points_x) + [points_x[0]], list(points_y) + [points_y[0]], 'b-')
+        # Add coordinates
+        self.annot = self.ax.annotate("", xy=(0,0), xytext=(10,10),
+                                    textcoords="offset points",
+                                    bbox=dict(boxstyle="round", fc="w", alpha=1),
+                                    arrowprops=dict(arrowstyle="->"))
+        self.annot.set_visible(False)
+        self.canvas.mpl_connect("motion_notify_event", self.hover)
+        distance = self.calculateDistance(path)
+        self.ax.set_title(f"Path {self.path_index + 1} Distance : {distance:.5f}")
         self.canvas.draw()
 
     def previousPath(self):
@@ -80,18 +109,41 @@ class MapWidget(QWidget):
         self.updateControlPathButtons()
 
     def updatePlot(self, generation, path, distance):
-        self.ax.set_title(f"Path Distance : {distance:.5f}")
         self.setPath(path)
-
         if self.parent().show_evolution:
             self.paths.append(path)
             self.path_index = generation
             self.updateControlPathButtons()
-
+        self.ax.set_title(f"Path {self.path_index + 1} Distance : {distance:.5f}")
+        self.canvas.draw()
+    
     def updateControlPathButtons(self):
         self.next_button.setStyleSheet(f"font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #{'505050' if self.path_index >= len(self.paths) - 1 else '5060FF'};")
         self.previous_button.setStyleSheet(f"font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #{'505050' if self.path_index <= 0 else '5060FF'};")
-        self.play_button.setText(f"Show Path n°{self.path_index}")
+
+    def updateAnnot(self, ind):
+        x, y = self.cities_x[ind], self.cities_y[ind]
+        self.annot.xy = (x, y)
+        text = f"({x:.2f}, {y:.2f})"
+        self.annot.set_text(text)
+
+        x_offset, y_offset = 10, 10
+        if x > 0.85 * self.ax.get_xlim()[1]:
+            x_offset = -30
+        self.annot.set_position((x_offset, y_offset))
+
+    def hover(self, event):
+        vis = self.annot.get_visible()
+        if event.inaxes == self.ax:
+            for i, (x, y) in enumerate(zip(self.cities_x, self.cities_y)):
+                if abs(x - event.xdata) < 0.01 and abs(y - event.ydata) < 0.01:
+                    self.updateAnnot(i)
+                    self.annot.set_visible(True)
+                    self.canvas.draw_idle()
+                    return
+        if vis:
+            self.annot.set_visible(False)
+            self.canvas.draw_idle()
 
     def initTCP(self):
         self.paths = []
