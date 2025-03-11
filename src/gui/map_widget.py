@@ -22,27 +22,27 @@ class MapWidget(QWidget):
         self.ax.legend()
         self.layout().addWidget(self.canvas)
 
-        self.buttons = QWidget()
-        buttons_layout = QHBoxLayout()
+        self.path_control_buttons = QWidget()
+        path_buttons_layout = QHBoxLayout()
 
-        previous_button = QPushButton("Previous")
-        previous_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
-        previous_button.clicked.connect(self.previousPath)
-        buttons_layout.addWidget(previous_button)
+        self.previous_button = QPushButton("Previous")
+        self.previous_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
+        self.previous_button.clicked.connect(self.previousPath)
+        path_buttons_layout.addWidget(self.previous_button)
 
-        next_button = QPushButton("next")
-        next_button.clicked.connect(self.nextPath)
-        next_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
-        buttons_layout.addWidget(next_button)
+        self.next_button = QPushButton("next")
+        self.next_button.clicked.connect(self.nextPath)
+        self.next_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
+        path_buttons_layout.addWidget(self.next_button)
 
-        play_button = QPushButton("Play")
-        play_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
-        buttons_layout.addWidget(play_button)
+        self.play_button = QPushButton("Play")
+        self.play_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
+        path_buttons_layout.addWidget(self.play_button)
 
-        buttons_layout.setContentsMargins(0, 0, 0, 0)
-        self.buttons.setLayout(buttons_layout)
-        self.buttons.hide()
-        self.layout().addWidget(self.buttons)
+        path_buttons_layout.setContentsMargins(0, 0, 0, 0)
+        self.path_control_buttons.setLayout(path_buttons_layout)
+        self.path_control_buttons.hide()
+        self.layout().addWidget(self.path_control_buttons)
 
     def remove(self, obj, count):
         for i in range(count):
@@ -70,17 +70,30 @@ class MapWidget(QWidget):
             return
         self.path_index -= 1
         self.setPath(self.paths[self.path_index])
+        self.updateControlPathButtons()
 
     def nextPath(self):
         if self.path_index >= len(self.paths) - 1:
             return
         self.path_index += 1
         self.setPath(self.paths[self.path_index])
+        self.updateControlPathButtons()
 
     def updatePlot(self, generation, path, distance):
         self.ax.set_title(f"Path Distance : {distance:.5f}")
         self.setPath(path)
-        self.paths.append(path)
 
-        self.buttons.show()
+        if self.parent().show_evolution:
+            self.paths.append(path)
+            self.path_index = generation
+            self.updateControlPathButtons()
 
+    def updateControlPathButtons(self):
+        self.next_button.setStyleSheet(f"font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #{'505050' if self.path_index >= len(self.paths) - 1 else '5060FF'};")
+        self.previous_button.setStyleSheet(f"font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #{'505050' if self.path_index <= 0 else '5060FF'};")
+        self.play_button.setText(f"Show Path n°{self.path_index}")
+
+    def initTCP(self):
+        self.paths = []
+        self.path_index = 0
+        self.path_control_buttons.show()

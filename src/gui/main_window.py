@@ -57,7 +57,7 @@ class MainWindow(QWidget):
         if show_evolution:
             self.evolution.clear()
             self.evolution.show()
-            self.map.show()
+            self.map.initTCP()
         else:
             self.evolution.hide()
             self.settings.progress_bar.setRange(0, generations)
@@ -69,7 +69,6 @@ class MainWindow(QWidget):
         self.tsp_genetic = TSPGenetic(num_cities, population_size, generations, mutation_rate, elitism, pre_gen_cities=cities, evolution_event=self.threadedReceiveGeneration, exit_event=self.threadedTSPEnded)
         # tsp_genetic = TSPPrim(num_cities)
 
-        self.map.paths = []
         if not use_pregen_cities:
             self.map.setCities(*zip(*self.tsp_genetic.cities))
         self.timer.start(PARAMS.evolution_animation_speed)
