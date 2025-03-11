@@ -31,7 +31,7 @@ class MapWidget(QWidget):
         self.previous_button = self.make_button("Previous", self.previousPath)
         path_buttons_layout.addWidget(self.previous_button)
 
-        self.play_button = self.make_button("Play")
+        self.play_button = self.make_button("Play", self.playPath)
         path_buttons_layout.addWidget(self.play_button)
 
         self.next_button = self.make_button("Next", self.nextPath)
@@ -103,10 +103,36 @@ class MapWidget(QWidget):
 
     def nextPath(self):
         if self.path_index >= len(self.paths) - 1:
+            self.stopPath()
             return
         self.path_index += 1
         self.setPath(self.paths[self.path_index])
         self.updateControlPathButtons()
+
+    def playPath(self):
+        if self.path_index >= len(self.paths) - 1:
+            return
+
+        if hasattr(self, 'timer') and self.timer.isActive():
+            self.stopPath()
+        else:
+            self.timer = QTimer()
+            self.timer.timeout.connect(self.nextPath)
+            self.timer.start(250)
+            self.play_button.setText("Stop")
+
+    def stopPath(self):
+        if hasattr(self, 'timer'):
+            self.timer.stop()
+            self.play_button.setText("Play")
+
+    def updatePath(self):
+        if self.path_index < len(self.paths) - 1:
+            self.path_index += 1
+            self.setPath(self.paths[self.path_index])
+            self.updateControlPathButtons()
+        else:
+            self.timer.stop()
 
     def updatePlot(self, generation, path, distance):
         self.setPath(path)
