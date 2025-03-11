@@ -65,5 +65,5 @@ class MapWidget(QWidget):
         self.canvas.draw()
 
     def updatePlot(self, generation, path, distance):
-        self.setPath(path)
         self.ax.set_title(f"Current Best Distance : {distance:.5f}")
+        self.setPath(path)
