@@ -1,46 +1,7 @@
 import numpy as np
 import math
 
-class TSPKruskal:
-    def __init__(self, num_cities, pre_gen_cities = None):
-        self.num_cities = num_cities
-        self.cities = pre_gen_cities if pre_gen_cities is not None else np.random.rand(num_cities, 2)
-        self.cities_deg = [0] * num_cities
-        self.distances = []
-        self.on_evolution = None
-        self.on_exit = None
-        self.is_ended = False
-
-    def distance(self, a, b):
-        return math.sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
-
-    def sortDistances(self):
-        for a_idx, a_pos in enumerate(self.cities):
-            for b_idx, b_pos in enumerate(self.cities[a_idx+1:], a_idx+1):
-                self.distances.append( (a_idx, b_idx, self.distance(a_pos, b_pos)) )
-        self.distances.sort(key=lambda x: x[2])
-
-    def run(self):
-        self.sortDistances()
-
-        path = []
-        ptr = 0
-        while len(path) < self.num_cities - 1:
-            a, b, dist = self.distances[ptr]
-            print(a, b, dist, ptr)
-            ptr += 1
-            if self.cities_deg[a] + self.cities_deg[b] < 2:
-                path.append( (a, b) )
-                self.cities_deg[a] += 1
-                self.cities_deg[b] += 1
-                print(path)
-            elif self.cities_deg[a] + self.cities_deg[b] == 2:
-                pass # self.check # TODO
-
-        print(path)
-        self.path = path
-
-class TSPPrim:
+class TSPNN: # Nearest Neighbor
     def __init__(self, num_cities, pre_gen_cities = None):
         self.num_cities = num_cities
         self.cities = pre_gen_cities if pre_gen_cities is not None else np.random.rand(num_cities, 2)
