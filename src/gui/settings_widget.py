@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QWidget, QLabel, QFormLayout, QLineEdit, QSizePolicy, QCheckBox, QProgressBar
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QPropertyAnimation, QRect
 from params import PARAMS
 
 class SettingsWidget(QWidget):
@@ -29,30 +29,35 @@ class SettingsWidget(QWidget):
         self.num_cities_input.setMinimumWidth(100)
         self.num_cities_input.setPlaceholderText(f"default: {PARAMS.default_num_cities}")
         self.num_cities_input.setValidator(QIntValidator(1, 999999, self))
+        self.num_cities_input.textChanged.connect(lambda _: self.num_cities_input.setStyleSheet("color: #000;"))
         form_layout.addRow("Number of cities:", self.num_cities_input)
 
         # Population size
         self.population_size_input = QLineEdit(self)
         self.population_size_input.setPlaceholderText(f"default: {PARAMS.default_population_size}")
         self.population_size_input.setValidator(QIntValidator(1, 999999, self))
+        self.population_size_input.textChanged.connect(lambda _: self.population_size_input.setStyleSheet("color: #000;"))
         form_layout.addRow("Population size:", self.population_size_input)
 
         # Number of generations
         self.generations_input = QLineEdit(self)
         self.generations_input.setPlaceholderText(f"default: {PARAMS.default_gen_count}")
         self.generations_input.setValidator(QIntValidator(1, 999999, self))
+        self.generations_input.textChanged.connect(lambda _: self.generations_input.setStyleSheet("color: #000;"))
         form_layout.addRow("Number of generations:", self.generations_input)
 
         # Mutation rate
         self.mutation_rate_input = QLineEdit(self)
         self.mutation_rate_input.setPlaceholderText(f"default: {PARAMS.default_mutation_rate}")
         self.mutation_rate_input.setValidator(QDoubleValidator(0, 1, 10, self))
+        self.mutation_rate_input.textChanged.connect(lambda _: self.mutation_rate_input.setStyleSheet("color: #000;"))
         form_layout.addRow("Mutation rate:", self.mutation_rate_input)
 
         # Elitism
         self.elitism_input = QLineEdit(self)
         self.elitism_input.setPlaceholderText(f"default: {PARAMS.default_elitism}")
         self.elitism_input.setValidator(QDoubleValidator(0, 1, 10, self))
+        self.elitism_input.textChanged.connect(lambda _: self.elitism_input.setStyleSheet("color: #000;"))
         form_layout.addRow("Elitism:", self.elitism_input)
 
         self.layout().addLayout(form_layout)
@@ -92,4 +97,15 @@ class SettingsWidget(QWidget):
         elitism = float(self.elitism_input.text() or PARAMS.default_elitism)
         show_evolution = self.show_evolution_input.isChecked()
 
-        self.parent().runAlgorithm(num_cities, population_size, generations, mutation_rate, elitism, show_evolution, None)
+        if num_cities < 4:
+            self.num_cities_input.setStyleSheet("color: #F00;")
+        elif population_size < 10:
+            self.population_size_input.setStyleSheet("color: #F00;")
+        elif generations < 1:
+            self.generations_input.setStyleSheet("color: #F00;")
+        elif mutation_rate < 0 or mutation_rate > 1:
+            self.mutation_rate_input.setStyleSheet("color: #F00;")
+        elif elitism >= 1 or population_size * elitism < 2:
+            self.elitism_input.setStyleSheet("color: #F00;")
+        else:
+            self.parent().runAlgorithm(num_cities, population_size, generations, mutation_rate, elitism, show_evolution, None)
