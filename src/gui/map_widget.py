@@ -6,6 +6,7 @@ class MapWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.paths = []
+        self.cities_x, self.cities_y = [], []
 
         # === INIT UI ===
         self.setLayout(QVBoxLayout())
@@ -20,10 +21,7 @@ class MapWidget(QWidget):
         self.ax.legend()
         self.layout().addWidget(self.canvas)
 
-        # Absolute position button
-        # self.run_button = QPushButton("X", self)
-        # self.run_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 0px; border-radius: 5px; background-color: #ED394B;")
-
+        self.buttons = QWidget()
         buttons_layout = QHBoxLayout()
 
         self.previous_button = QPushButton("Previous")
@@ -38,10 +36,10 @@ class MapWidget(QWidget):
         self.play_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
         buttons_layout.addWidget(self.play_button)
 
-
-        self.layout().addLayout(buttons_layout)
-
-        self.hide()
+        buttons_layout.setContentsMargins(0, 0, 0, 0)
+        self.buttons.setLayout(buttons_layout)
+        self.buttons.hide()
+        self.layout().addWidget(self.buttons)
 
     def remove(self, obj, count):
         for i in range(count):
@@ -67,3 +65,5 @@ class MapWidget(QWidget):
     def updatePlot(self, generation, path, distance):
         self.ax.set_title(f"Current Best Distance : {distance:.5f}")
         self.setPath(path)
+
+        self.buttons.show()

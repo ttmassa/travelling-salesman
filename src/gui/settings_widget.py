@@ -67,6 +67,11 @@ class SettingsWidget(QWidget):
         self.show_evolution_input.setChecked(PARAMS.default_show_evolution)
         self.layout().addWidget(self.show_evolution_input)
 
+        # Use Pre-Generated Cities
+        self.use_pregens_cities_input = QCheckBox("Use pre-generated cities", self)
+        # self.use_pregens_cities_input.clicked.connect(lambda _: self.parent().map.show() or self.parent()._window.adjustSize())
+        self.layout().addWidget(self.use_pregens_cities_input)
+
         # Import cities button
         self.import_button = QPushButton("Import cities", self)
         self.import_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #CDCDDD;")
@@ -96,6 +101,7 @@ class SettingsWidget(QWidget):
         mutation_rate = float(self.mutation_rate_input.text() or PARAMS.default_mutation_rate)
         elitism = float(self.elitism_input.text() or PARAMS.default_elitism)
         show_evolution = self.show_evolution_input.isChecked()
+        use_pregen_cities = self.use_pregens_cities_input.isChecked()
 
         if num_cities < 4:
             self.num_cities_input.setStyleSheet("color: #F00;")
@@ -108,4 +114,4 @@ class SettingsWidget(QWidget):
         elif elitism >= 1 or population_size * elitism < 2:
             self.elitism_input.setStyleSheet("color: #F00;")
         else:
-            self.parent().runAlgorithm(num_cities, population_size, generations, mutation_rate, elitism, show_evolution, None)
+            self.parent().runAlgorithm(num_cities, population_size, generations, mutation_rate, elitism, show_evolution, use_pregen_cities)

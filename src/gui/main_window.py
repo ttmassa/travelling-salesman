@@ -6,6 +6,7 @@ from gui.settings_widget import SettingsWidget
 from gui.map_widget import MapWidget
 from gui.evolution_widget import EvolutionWidget
 from params import PARAMS
+import numpy
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -41,7 +42,10 @@ class MainWindow(QWidget):
             if not fun(*args):
                 break
 
-    def runAlgorithm(self, num_cities, population_size, generations, mutation_rate, elitism, show_evolution, cities):
+    def runAlgorithm(self, num_cities, population_size, generations, mutation_rate, elitism, show_evolution, use_pregen_cities):
+        if use_pregen_cities and len(self.map.cities_x) == 0:
+            return
+
         if self.tsp_genetic is not None:
             self.close_tsp = True
             self.tsp_thread.join()
@@ -61,10 +65,12 @@ class MainWindow(QWidget):
         self._window.adjustSize()
 
         self.show_evolution = show_evolution
+        cities = numpy.array(tuple(zip(self.map.cities_x, self.map.cities_y))) if use_pregen_cities else None
         self.tsp_genetic = TSPGenetic(num_cities, population_size, generations, mutation_rate, elitism, pre_gen_cities=cities, evolution_event=self.threadedReceiveGeneration, exit_event=self.threadedTSPEnded)
         # tsp_genetic = TSPPrim(num_cities)
 
-        self.map.setCities(*zip(*self.tsp_genetic.cities))
+        if not use_pregen_cities:
+            self.map.setCities(*zip(*self.tsp_genetic.cities))
         self.timer.start(PARAMS.evolution_animation_speed)
 
         self.tsp_thread = threading.Thread(target=self.tsp_genetic.run)
