@@ -26,6 +26,12 @@ class MapWidget(QWidget):
         self.ax.legend()
         self.layout().addWidget(self.canvas)
 
+        self.show_text = self.ax.text(1.1, 1.1, '➔', transform=self.ax.transAxes,
+                                    fontsize=12, fontweight='400', color='black',
+                                    ha='right', va='bottom', bbox=dict(facecolor='white', alpha=0.6, edgecolor='none'))
+        self.show_text.set_picker(True)
+        self.canvas.mpl_connect('pick_event', self.on_pick)
+
         self.path_control_buttons = QWidget()
         path_buttons_layout = QHBoxLayout()
 
@@ -46,6 +52,10 @@ class MapWidget(QWidget):
     def remove(self, obj, count):
         for i in range(count):
             obj.pop().remove()
+
+    def on_pick(self, event):
+        if event.artist == self.show_text:
+            self.parent().evolution.show()
 
     def setCities(self, points_x, points_y):
         self.remove(self.edges, len(self.edges))

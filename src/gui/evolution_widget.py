@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QSpacerItem, QSizePolicy
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 
@@ -9,7 +9,8 @@ class EvolutionWidget(QWidget):
         self.points = []
 
     def initUI(self):
-        self.setLayout(QVBoxLayout())
+        main_layout = QVBoxLayout()
+        self.setLayout(main_layout)
 
         self.fig, self.ax = plt.subplots()
         self.canvas = FigureCanvas(self.fig)
@@ -17,15 +18,20 @@ class EvolutionWidget(QWidget):
         self.ax.set_ylabel("distance")
         self.ax.set_title("Population Evolution")
         self.ax.legend(handles=self.ax.plot([], [], 'ro', label="Individual") + self.ax.plot([], [], 'go', label="Elit"))
-        self.layout().addWidget(self.canvas)
 
-        # self.close_button = QPushButton("Close Evolution Widget", self)
-        # self.close_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #ED394B;")
-        # self.close_button.clicked.connect(self.parent().closeEvolutionWidget)
-        # self.close_button.hide()
-        # self.layout().addWidget(self.close_button)
+        main_layout.addWidget(self.canvas)
+
+        self.hide_text = self.ax.text(1.1, 1.1, 'x', transform=self.ax.transAxes,
+                                      fontsize=12, fontweight='400', color='black',
+                                      ha='right', va='bottom', bbox=dict(facecolor='white', alpha=0.6, edgecolor='none'))
+        self.hide_text.set_picker(True)
+        self.canvas.mpl_connect('pick_event', self.on_pick)
 
         self.hide()
+
+    def on_pick(self, event):
+        if event.artist == self.hide_text:
+            self.hide()
 
     def clear(self):
         while self.points:
