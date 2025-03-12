@@ -1,7 +1,8 @@
-from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QWidget, QHBoxLayout
+from PyQt5.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout
 from PyQt5.QtCore import QTimer
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
+from utils import makeButton, setButtonStyle
 
 class MapWidget(QWidget):
     def __init__(self, parent):
@@ -28,26 +29,19 @@ class MapWidget(QWidget):
         self.path_control_buttons = QWidget()
         path_buttons_layout = QHBoxLayout()
 
-        self.previous_button = self.make_button("Previous", self.previousPath)
+        self.previous_button = makeButton("Previous", "5060FF", self.previousPath)
         path_buttons_layout.addWidget(self.previous_button)
 
-        self.play_button = self.make_button("Play", self.playPath)
+        self.play_button = makeButton("Play", "5060FF", self.playPath)
         path_buttons_layout.addWidget(self.play_button)
 
-        self.next_button = self.make_button("Next", self.nextPath)
+        self.next_button = makeButton("Next", "5060FF", self.nextPath)
         path_buttons_layout.addWidget(self.next_button)
 
         path_buttons_layout.setContentsMargins(0, 0, 0, 0)
         self.path_control_buttons.setLayout(path_buttons_layout)
         self.path_control_buttons.hide()
         self.layout().addWidget(self.path_control_buttons)
-
-    def make_button(self, text, callback=None):
-        button = QPushButton(text)
-        button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #5060FF;")
-        button.clicked.connect(callback) if callback else None
-
-        return button
 
     def remove(self, obj, count):
         for i in range(count):
@@ -142,10 +136,10 @@ class MapWidget(QWidget):
             self.updateControlPathButtons()
         self.ax.set_title(f"Path {self.path_index + 1} Distance : {distance:.5f}")
         self.canvas.draw()
-    
+
     def updateControlPathButtons(self):
-        self.next_button.setStyleSheet(f"font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #{'505050' if self.path_index >= len(self.paths) - 1 else '5060FF'};")
-        self.previous_button.setStyleSheet(f"font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #{'505050' if self.path_index <= 0 else '5060FF'};")
+        setButtonStyle(self.next_button, '505050' if self.path_index >= len(self.paths) - 1 else '5060FF')
+        setButtonStyle(self.previous_button, '505050' if self.path_index <= 0 else '5060FF')
 
     def updateAnnot(self, ind):
         x, y = self.cities_x[ind], self.cities_y[ind]
@@ -174,4 +168,5 @@ class MapWidget(QWidget):
     def initTCP(self):
         self.paths = []
         self.path_index = 0
+        self.updateControlPathButtons()
         self.path_control_buttons.show()

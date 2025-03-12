@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QWidget, QLabel, QFormLayout, QLineEdit, QSizePolicy, QCheckBox, QProgressBar
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
 from PyQt5.QtCore import Qt
-from params import PARAMS
+from utils import PARAMS, makeButton
 
 class SettingsWidget(QWidget):
     def __init__(self, parent):
@@ -74,12 +74,10 @@ class SettingsWidget(QWidget):
         self.layout().addWidget(self.use_pregens_cities_input)
 
         # Import cities button
-        self.import_button = QPushButton("Import cities", self)
-        self.import_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #CDCDDD;")
+        self.import_button = makeButton("Import cities", "CDCDDD")
         self.layout().addWidget(self.import_button)
 
         self.export_button = QPushButton("Export data", self)
-        self.export_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #CDCDDD;")
         self.export_button.hide()
         self.layout().addWidget(self.export_button)
 
@@ -90,9 +88,7 @@ class SettingsWidget(QWidget):
         self.layout().addWidget(self.progress_bar)
 
         # Run button
-        self.run_button = QPushButton("Run TSP Algorithm", self)
-        self.run_button.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; border-radius: 5px; background-color: #39ED4B;")
-        self.run_button.clicked.connect(self.runAlgorithm)
+        self.run_button = makeButton("Run TSP Algorithm", "39ED4B", self.runAlgorithm)
         self.layout().addWidget(self.run_button)
 
     def runAlgorithm(self):

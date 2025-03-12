@@ -5,7 +5,7 @@ from tsp_genetic import TSPGenetic
 from gui.settings_widget import SettingsWidget
 from gui.map_widget import MapWidget
 from gui.evolution_widget import EvolutionWidget
-from params import PARAMS
+from utils import PARAMS
 import numpy
 
 class MainWindow(QWidget):
