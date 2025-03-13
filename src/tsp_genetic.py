@@ -4,9 +4,8 @@ import math
 from utils import PARAMS
 
 class TSPGenetic:
-    def __init__(self, num_cities, population_size, generations, mutation_rate, elitism, pre_gen_cities=None, evolution_event=None, exit_event=None):
+    def __init__(self, num_cities, population_size, generations, mutation_rate, elitism, pre_gen_cities=None, use_stagnation_threshold=False, evolution_event=None, exit_event=None):
         self.num_cities = len(pre_gen_cities) if pre_gen_cities is not None else num_cities
-        assert 4 <= self.num_cities and 10 <= population_size and 1 <= generations and 0 <= mutation_rate <= 1 and 2 <= population_size * elitism < population_size, "Domain Error"
         self.population_size = population_size
         self.generations = generations
         self.mutation_rate = mutation_rate
@@ -14,10 +13,12 @@ class TSPGenetic:
         self.distance_matrix = self.calculateDistanceMatrix()
         self.population = self.generatePopulation()
         self.elit_count = int(elitism * self.population_size)
-        self.stagnation_threshold = self.computeStagnationThreshold()
+        self.stagnation_threshold = self.computeStagnationThreshold() if use_stagnation_threshold else float('inf')
         self.on_evolution = evolution_event
         self.on_exit = exit_event
         self.is_ended = False
+        
+        assert 4 <= self.num_cities and 10 <= population_size and 1 <= generations and 0 <= mutation_rate <= 1 and 2 <= population_size * elitism < population_size, "Domain Error"
 
     def calculateDistanceMatrix(self):
         # Initialize distance matrix : distance_matrix[i, j] = norm(cities[i] - cities[j])

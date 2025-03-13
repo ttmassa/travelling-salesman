@@ -52,7 +52,7 @@ class MainWindow(QWidget):
         self._window.centralWidget().adjustSize()
         self._window.adjustSize()
 
-    def runAlgorithm(self, num_cities, population_size, generations, mutation_rate, elitism, show_evolution, use_pregen_cities):
+    def runAlgorithm(self, num_cities, population_size, generations, mutation_rate, elitism, show_evolution, use_pregen_cities, use_stagnation_threshold):
         if use_pregen_cities and len(self.map.cities_x) == 0:
             return
 
@@ -74,7 +74,7 @@ class MainWindow(QWidget):
 
         self.show_evolution = show_evolution
         cities = numpy.array(tuple(zip(self.map.cities_x, self.map.cities_y))) if use_pregen_cities else None
-        self.tsp_genetic = TSPGenetic(num_cities, population_size, generations, mutation_rate, elitism, pre_gen_cities=cities, evolution_event=self.threadedReceiveGeneration, exit_event=self.threadedTSPEnded)
+        self.tsp_genetic = TSPGenetic(num_cities, population_size, generations, mutation_rate, elitism, pre_gen_cities=cities, use_stagnation_threshold=use_stagnation_threshold, evolution_event=self.threadedReceiveGeneration, exit_event=self.threadedTSPEnded)
         # tsp_genetic = TSPPrim(num_cities)
 
         if not use_pregen_cities:

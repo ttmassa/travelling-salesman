@@ -14,6 +14,7 @@ class Option:
     # Constant to compute the stagnation threshold
     default_stagnation_alpha: int = 5
     default_show_evolution: bool = True
+    default_stagnation_threshold: bool = False
 
 PARAMS = Option()
 
