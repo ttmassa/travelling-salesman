@@ -11,6 +11,8 @@ class Option:
     default_gen_count: int = 10
     default_mutation_rate: float = 0.03
     default_elitism: float = 0.1
+    # Constant to compute the stagnation threshold
+    default_stagnation_alpha: int = 5
     default_show_evolution: bool = True
 
 PARAMS = Option()

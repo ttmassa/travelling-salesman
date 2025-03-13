@@ -1,5 +1,7 @@
 import numpy as np
 import random
+import math
+from utils import PARAMS
 
 class TSPGenetic:
     def __init__(self, num_cities, population_size, generations, mutation_rate, elitism, pre_gen_cities=None, evolution_event=None, exit_event=None):
@@ -12,6 +14,7 @@ class TSPGenetic:
         self.distance_matrix = self.calculateDistanceMatrix()
         self.population = self.generatePopulation()
         self.elit_count = int(elitism * self.population_size)
+        self.stagnation_threshold = self.computeStagnationThreshold()
         self.on_evolution = evolution_event
         self.on_exit = exit_event
         self.is_ended = False
@@ -30,7 +33,10 @@ class TSPGenetic:
     def computeIndividualDistance(self, individual):
         shifted_indices = np.roll(individual, -1)
         return np.sum(self.distance_matrix[individual, shifted_indices])
-
+    
+    def computeStagnationThreshold(self):
+        return PARAMS.default_stagnation_alpha * math.log(self.num_cities * self.population_size) / (self.mutation_rate * self.elit_count)
+        
     def createChild(self, parent1, parent2):
         parent1, parent2 = parent1[0], parent2[0]
         start, end = sorted(random.sample(range(self.num_cities), 2))
@@ -69,6 +75,7 @@ class TSPGenetic:
 
     def run(self):
         best_individual = None
+        stagnation_counter = 0
         for i in range(self.generations):
             self.selection()
             self.evolve()
@@ -77,6 +84,11 @@ class TSPGenetic:
             current_best_individual = self.population[0]
             if not best_individual or current_best_individual[1] < best_individual[1]:
                 best_individual = current_best_individual
+                stagnation_counter = 0
+            else:
+                stagnation_counter += 1
+            if stagnation_counter >= self.stagnation_threshold:
+                break
             if self.on_evolution:
                 if self.on_evolution(i, self.population):
                     return
