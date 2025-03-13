@@ -49,6 +49,14 @@ class MapWidget(QWidget):
         self.path_control_buttons.hide()
         self.layout().addWidget(self.path_control_buttons)
 
+        # Add coordinates
+        self.annot = self.ax.annotate("", xy=(0,0), xytext=(10,10),
+                                    textcoords="offset points",
+                                    bbox=dict(boxstyle="round", fc="w", alpha=1),
+                                    arrowprops=dict(arrowstyle="->"))
+        self.annot.set_visible(False)
+        self.canvas.mpl_connect("motion_notify_event", self.hover)
+
     def remove(self, obj, count):
         for i in range(count):
             obj.pop().remove()
@@ -83,13 +91,6 @@ class MapWidget(QWidget):
         points_x = [self.cities_x[city] for city in path]
         points_y = [self.cities_y[city] for city in path]
         self.vertices = self.ax.plot(list(points_x) + [points_x[0]], list(points_y) + [points_y[0]], 'b-')
-        # Add coordinates
-        self.annot = self.ax.annotate("", xy=(0,0), xytext=(10,10),
-                                    textcoords="offset points",
-                                    bbox=dict(boxstyle="round", fc="w", alpha=1),
-                                    arrowprops=dict(arrowstyle="->"))
-        self.annot.set_visible(False)
-        self.canvas.mpl_connect("motion_notify_event", self.hover)
         distance = self.calculateDistance(path)
         self.ax.set_title(f"Path {self.path_index + 1} Distance : {distance:.5f}")
         self.canvas.draw()
@@ -111,7 +112,7 @@ class MapWidget(QWidget):
 
     def playPath(self):
         if self.path_index >= len(self.paths) - 1:
-            return
+            self.path_index = 0
 
         if hasattr(self, 'timer') and self.timer.isActive():
             self.stopPath()
@@ -159,7 +160,6 @@ class MapWidget(QWidget):
         self.annot.set_position((x_offset, y_offset))
 
     def hover(self, event):
-        vis = self.annot.get_visible()
         if event.inaxes == self.ax:
             for i, (x, y) in enumerate(zip(self.cities_x, self.cities_y)):
                 if abs(x - event.xdata) < 0.01 and abs(y - event.ydata) < 0.01:
@@ -167,7 +167,7 @@ class MapWidget(QWidget):
                     self.annot.set_visible(True)
                     self.canvas.draw_idle()
                     return
-        if vis:
+        if self.annot.get_visible():
             self.annot.set_visible(False)
             self.canvas.draw_idle()
 
