@@ -21,17 +21,13 @@ class EvolutionWidget(QWidget):
 
         main_layout.addWidget(self.canvas)
 
-        self.hide_text = self.ax.text(1.1, 1.1, 'x', transform=self.ax.transAxes,
+        self.close_button = self.ax.text(1.1, 1.1, 'x', transform=self.ax.transAxes,
                                       fontsize=12, fontweight='400', color='black',
                                       ha='right', va='bottom', bbox=dict(facecolor='white', alpha=0.6, edgecolor='none'))
-        self.hide_text.set_picker(True)
-        self.canvas.mpl_connect('pick_event', self.on_pick)
+        self.close_button.set_picker(True)
+        self.canvas.mpl_connect('pick_event', self.parent().hideEvolution)
 
         self.hide()
-
-    def on_pick(self, event):
-        if event.artist == self.hide_text:
-            self.hide()
 
     def clear(self):
         while self.points:

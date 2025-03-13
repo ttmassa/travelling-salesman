@@ -43,6 +43,15 @@ class MainWindow(QWidget):
             if not fun(*args):
                 break
 
+    def showEvolution(self, _=None):
+        self.evolution.show()
+        self._window.adjustSize()
+
+    def hideEvolution(self, _=None):
+        self.evolution.hide()
+        self._window.centralWidget().adjustSize()
+        self._window.adjustSize()
+
     def runAlgorithm(self, num_cities, population_size, generations, mutation_rate, elitism, show_evolution, use_pregen_cities):
         if use_pregen_cities and len(self.map.cities_x) == 0:
             return
@@ -54,16 +63,14 @@ class MainWindow(QWidget):
 
         self.execution_queue.clear()
 
-        # self.settings.hide()
         if show_evolution:
             self.evolution.clear()
-            self.evolution.show()
             self.map.initTCP()
+            self.showEvolution()
         else:
-            self.evolution.hide()
             self.settings.progress_bar.setRange(0, generations)
             self.settings.progress_bar.show()
-        self._window.adjustSize()
+            self.hideEvolution()
 
         self.show_evolution = show_evolution
         cities = numpy.array(tuple(zip(self.map.cities_x, self.map.cities_y))) if use_pregen_cities else None
