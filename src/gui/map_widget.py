@@ -8,6 +8,7 @@ class MapWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.paths = []
+        self.distances = []
         self.path_index = 0
         self.cities_x, self.cities_y = [], []
 
@@ -74,24 +75,11 @@ class MapWidget(QWidget):
         self.cities_x[city], self.cities_y[city] = x, y
         self.setCities(self.cities_x, self.cities_y)
 
-    def calculateDistance(self, path):
-        distance = 0
-        for i in range(len(path) - 1):
-            x1, y1 = self.cities_x[path[i]], self.cities_y[path[i]]
-            x2, y2 = self.cities_x[path[i + 1]], self.cities_y[path[i + 1]]
-            distance += ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
-        # Add distance from last city back to the first city
-        x1, y1 = self.cities_x[path[-1]], self.cities_y[path[-1]]
-        x2, y2 = self.cities_x[path[0]], self.cities_y[path[0]]
-        distance += ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
-        return distance
-
-    def setPath(self, path):
+    def setPath(self, path, distance):
         self.remove(self.vertices, len(self.vertices))
         points_x = [self.cities_x[city] for city in path]
         points_y = [self.cities_y[city] for city in path]
         self.vertices = self.ax.plot(list(points_x) + [points_x[0]], list(points_y) + [points_y[0]], 'b-')
-        distance = self.calculateDistance(path)
         self.ax.set_title(f"Path {self.path_index + 1} Distance : {distance:.5f}")
         self.canvas.draw()
 
@@ -99,7 +87,7 @@ class MapWidget(QWidget):
         if self.path_index <= 0:
             return
         self.path_index -= 1
-        self.setPath(self.paths[self.path_index])
+        self.setPath(self.paths[self.path_index], self.distances[self.path_index])
         self.updateControlPathButtons()
 
     def nextPath(self):
@@ -107,12 +95,12 @@ class MapWidget(QWidget):
             self.stopPath()
             return
         self.path_index += 1
-        self.setPath(self.paths[self.path_index])
+        self.setPath(self.paths[self.path_index], self.distances[self.path_index])
         self.updateControlPathButtons()
 
     def playPath(self):
         if self.path_index >= len(self.paths) - 1:
-            self.path_index = 0
+            self.path_index = -1
 
         if hasattr(self, 'timer') and self.timer.isActive():
             self.stopPath()
@@ -136,12 +124,12 @@ class MapWidget(QWidget):
             self.timer.stop()
 
     def updatePlot(self, generation, path, distance):
-        self.setPath(path)
         if self.parent().show_evolution:
             self.paths.append(path)
+            self.distances.append(distance)
             self.path_index = generation
             self.updateControlPathButtons()
-        self.ax.set_title(f"Path {self.path_index + 1} Distance : {distance:.5f}")
+        self.setPath(path, distance)
         self.canvas.draw()
 
     def updateControlPathButtons(self):
@@ -172,7 +160,8 @@ class MapWidget(QWidget):
             self.canvas.draw_idle()
 
     def initTCP(self):
-        self.paths = []
+        self.paths.clear()
+        self.distances.clear()
         self.path_index = 0
         self.updateControlPathButtons()
         self.path_control_buttons.show()
