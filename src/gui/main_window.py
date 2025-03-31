@@ -65,8 +65,16 @@ class MainWindow(QWidget):
             try:
                 with open(file_dialog.selectedFiles()[0], "r") as file:
                     cities = json.loads(file.read())
-                    assert type(cities) is list and all([type(city) in (list, tuple) and len(city) == 2 and type(city[0]) in (int, float) and type(city[1]) in (int, float) for city in cities])
-                    self.map.setCities(*zip(*cities))
+                    assert isinstance(cities, list) and all(
+                        isinstance(city, dict) and
+                        "id" in city and "x" in city and "y" in city and
+                        isinstance(city["x"], (int, float)) and
+                        isinstance(city["y"], (int, float))
+                        for city in cities
+                    )
+                    x_coords = [city["x"] for city in cities]
+                    y_coords = [city["y"] for city in cities]
+                    self.map.setCities(x_coords, y_coords)
             except Exception as e:
                 print("Invalid file", e)
 
