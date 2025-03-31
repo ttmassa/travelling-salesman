@@ -9,7 +9,7 @@ class TSPGenetic:
         self.population_size = population_size
         self.generations = generations
         self.mutation_rate = mutation_rate
-        self.cities = pre_gen_cities if pre_gen_cities is not None else np.random.rand(num_cities, 2)
+        self.cities = pre_gen_cities if pre_gen_cities is not None else np.random.rand(num_cities, 2) * [PARAMS.default_cities_x, PARAMS.default_cities_y]
         self.distance_matrix = self.calculateDistanceMatrix()
         self.population = self.generatePopulation()
         self.elit_count = int(elitism * self.population_size)

@@ -9,6 +9,8 @@ class Option:
     progressbar_refresh_time: int = 50
 
     default_num_cities: int = 10
+    default_cities_x: int = 1
+    default_cities_y: int = 1
     default_population_size: int = 100
     default_gen_count: int = 10
     default_mutation_rate: float = 0.03
