@@ -75,6 +75,7 @@ class MainWindow(QWidget):
                     x_coords = [city["x"] for city in cities]
                     y_coords = [city["y"] for city in cities]
                     self.map.setCities(x_coords, y_coords)
+                    self.settings.use_pregens_cities_input.setChecked(True)
             except Exception as e:
                 print("Invalid file", e)
 
@@ -125,7 +126,7 @@ class MainWindow(QWidget):
         # tsp_genetic = TSPPrim(num_cities)
 
         if not use_pregen_cities:
-            self.map.setCities(*zip(*self.tsp_genetic.cities))
+            self.map.setCities(*map(list, zip(*self.tsp_genetic.cities)))
         self.timer.start(PARAMS.evolution_animation_speed)
 
         self.tsp_thread = threading.Thread(target=self.tsp_genetic.run)

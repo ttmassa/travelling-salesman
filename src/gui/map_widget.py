@@ -11,6 +11,7 @@ class MapWidget(QWidget):
         self.distances = []
         self.path_index = 0
         self.cities_x, self.cities_y = [], []
+        self.selected_city = None
 
         self.initUI()
 
@@ -19,6 +20,8 @@ class MapWidget(QWidget):
 
         self.fig, self.ax = plt.subplots()
         self.canvas = FigureCanvas(self.fig)
+        self.ax.set_xlim(0, 1)
+        self.ax.set_ylim(0, 1)
         self.ax.set_xlabel("longitude")
         self.ax.set_ylabel("latitude")
         self.ax.set_title("Path")
@@ -57,7 +60,7 @@ class MapWidget(QWidget):
                                     arrowprops=dict(arrowstyle="->"))
         self.annot.set_visible(False)
         self.canvas.mpl_connect("motion_notify_event", self.hover)
-        self.canvas.mpl_connect("pick_event", self.onPick)
+        self.canvas.mpl_connect("button_press_event", self.onClick)
 
     def remove(self, obj, count):
         for i in range(count):
@@ -150,6 +153,11 @@ class MapWidget(QWidget):
 
     def hover(self, event):
         if event.inaxes == self.ax:
+            if self.selected_city is not None:
+                if event.button != 1:
+                    self.selected_city = None
+                self.moveCity(self.selected_city, event.xdata, event.ydata)
+                return
             for i, (x, y) in enumerate(zip(self.cities_x, self.cities_y)):
                 if abs(x - event.xdata) < 0.01 and abs(y - event.ydata) < 0.01:
                     self.updateAnnot(i)
@@ -160,11 +168,15 @@ class MapWidget(QWidget):
             self.annot.set_visible(False)
             self.canvas.draw_idle()
 
-    def onPick(event):
-        line = event.artist
-        xdata, ydata = line.get_data()
-        ind = event.ind
-        print(f'on pick line: {xdata[ind]:.3f}, {ydata[ind]:.3f}')
+    def onClick(self, event):
+        if event.button == 0:
+            self.selected_city = None
+            for i, (x, y) in enumerate(zip(self.cities_x, self.cities_y)):
+                if abs(x - event.xdata) < 0.01 and abs(y - event.ydata) < 0.01:
+                    self.selected_city = i
+                    return
+        elif event.button == 2:
+            self.addCity(event.xdata, event.ydata)
 
     def initTCP(self):
         self.paths.clear()
