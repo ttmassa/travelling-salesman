@@ -71,14 +71,21 @@ class MainWindow(QWidget):
                 print("Invalid file", e)
 
     def exportCities(self):
-        file_dialog = QFileDialog(self)
-        file_dialog.setWindowTitle("Open File")
-        file_dialog.setFileMode(QFileDialog.FileMode.AnyFile)
-        file_dialog.setViewMode(QFileDialog.ViewMode.Detail)
+        options = QFileDialog.Options()
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Cities File",
+            "",
+            "JSON Files (*.json);;All Files (*)",
+            options=options
+        )
 
-        if file_dialog.exec():
-            with open(file_dialog.selectedFiles()[0], "w") as file:
-                json.dump(list(zip(self.map.cities_x, self.map.cities_y)), file)
+        if file_path:
+            try:
+                with open(file_path, "w") as file:
+                    json.dump(list(zip(self.map.cities_x, self.map.cities_y)), file)
+            except Exception as e:
+                print("Error saving file:", e)
 
     def runAlgorithm(self, num_cities, population_size, generations, mutation_rate, elitism, show_evolution, use_pregen_cities, use_stagnation_threshold):
         if use_pregen_cities and len(self.map.cities_x) == 0:
