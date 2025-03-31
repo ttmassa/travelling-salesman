@@ -82,6 +82,7 @@ class MapWidget(QWidget):
         self.path_index = 0
         self.updateControlPathButtons()
         self.parent().stopAlgorithm()
+        self.parent().settings.setCitiesCount(len(self.cities_x))
 
     def setPath(self, path, distance):
         self.remove(self.vertices, len(self.vertices))

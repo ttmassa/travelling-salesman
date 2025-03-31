@@ -95,6 +95,12 @@ class SettingsWidget(QWidget):
         self.run_button = makeButton("Run TSP Algorithm", "39ED4B", self.runAlgorithm)
         self.layout().addWidget(self.run_button)
 
+    def setCitiesCount(self, nb):
+        self.use_pregens_cities_input.setChecked(True)
+        self.num_cities_input.setText(str(nb))
+        if nb < 4:
+            self.num_cities_input.setStyleSheet("color: #F00;")
+
     def runAlgorithm(self):
         # Get the parameters from the input fields
         num_cities = int(self.num_cities_input.text() or PARAMS.default_num_cities)

@@ -108,7 +108,8 @@ class MainWindow(QWidget):
         self.execution_queue.clear()
 
     def runAlgorithm(self, num_cities, population_size, generations, mutation_rate, elitism, show_evolution, use_pregen_cities, use_stagnation_threshold):
-        if use_pregen_cities and len(self.map.cities_x) == 0:
+        if use_pregen_cities and len(self.map.cities_x) < 4:
+            self.settings.setCitiesCount(len(self.map.cities_x))
             return
 
         self.stopAlgorithm()
