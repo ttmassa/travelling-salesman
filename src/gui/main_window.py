@@ -82,8 +82,12 @@ class MainWindow(QWidget):
 
         if file_path:
             try:
+                cities_data = [
+                    {"id": idx, "x": x, "y": y}
+                    for idx, (x, y) in enumerate(zip(self.map.cities_x, self.map.cities_y))
+                ]
                 with open(file_path, "w") as file:
-                    json.dump(list(zip(self.map.cities_x, self.map.cities_y)), file)
+                    json.dump(cities_data, file, indent=4)
             except Exception as e:
                 print("Error saving file:", e)
 
