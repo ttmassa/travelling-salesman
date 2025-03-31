@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QMainWindow, QWidget, QHBoxLayout
+from PyQt5.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QFileDialog
 from PyQt5.QtCore import QTimer
 import threading
 from tsp_genetic import TSPGenetic
@@ -7,6 +7,7 @@ from gui.map_widget import MapWidget
 from gui.evolution_widget import EvolutionWidget
 from utils import PARAMS
 import numpy
+import json
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -44,13 +45,40 @@ class MainWindow(QWidget):
                 break
 
     def showEvolution(self, _=None):
+        self.map.extends_button.set_text("")
         self.evolution.show()
         self._window.adjustSize()
 
     def hideEvolution(self, _=None):
+        self.map.extends_button.set_text("➔")
         self.evolution.hide()
         self._window.centralWidget().adjustSize()
         self._window.adjustSize()
+
+    def importCities(self):
+        file_dialog = QFileDialog(self)
+        file_dialog.setWindowTitle("Open File")
+        file_dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        file_dialog.setViewMode(QFileDialog.ViewMode.Detail)
+
+        if file_dialog.exec():
+            try:
+                with open(file_dialog.selectedFiles()[0], "r") as file:
+                    cities = json.loads(file.read())
+                    assert type(cities) is list and all([type(city) in (list, tuple) and len(city) == 2 and type(city[0]) in (int, float) and type(city[1]) in (int, float) for city in cities])
+                    self.map.setCities(*zip(*cities))
+            except Exception as e:
+                print("Invalid file", e)
+
+    def exportCities(self):
+        file_dialog = QFileDialog(self)
+        file_dialog.setWindowTitle("Open File")
+        file_dialog.setFileMode(QFileDialog.FileMode.AnyFile)
+        file_dialog.setViewMode(QFileDialog.ViewMode.Detail)
+
+        if file_dialog.exec():
+            with open(file_dialog.selectedFiles()[0], "w") as file:
+                json.dump(list(zip(self.map.cities_x, self.map.cities_y)), file)
 
     def runAlgorithm(self, num_cities, population_size, generations, mutation_rate, elitism, show_evolution, use_pregen_cities, use_stagnation_threshold):
         if use_pregen_cities and len(self.map.cities_x) == 0:

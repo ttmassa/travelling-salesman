@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QWidget, QLabel, QFormLayout, QLineEdit, QSizePolicy, QCheckBox, QProgressBar
+from PyQt5.QtWidgets import QVBoxLayout, QWidget, QLabel, QFormLayout, QLineEdit, QSizePolicy, QCheckBox, QProgressBar
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
 from PyQt5.QtCore import Qt
 from utils import PARAMS, makeButton
@@ -79,11 +79,10 @@ class SettingsWidget(QWidget):
         self.layout().addWidget(self.use_pregens_cities_input)
 
         # Import cities button
-        self.import_button = makeButton("Import cities", "CDCDDD")
+        self.import_button = makeButton("Import cities", "CDCDDD", self.parent().importCities)
         self.layout().addWidget(self.import_button)
 
-        self.export_button = QPushButton("Export data", self)
-        self.export_button.hide()
+        self.export_button = makeButton("Export data", "CDCDDD", self.parent().exportCities)
         self.layout().addWidget(self.export_button)
 
         self.layout().addSpacing(50)

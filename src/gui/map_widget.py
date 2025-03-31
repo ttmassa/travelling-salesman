@@ -57,6 +57,7 @@ class MapWidget(QWidget):
                                     arrowprops=dict(arrowstyle="->"))
         self.annot.set_visible(False)
         self.canvas.mpl_connect("motion_notify_event", self.hover)
+        self.canvas.mpl_connect("pick_event", self.onPick)
 
     def remove(self, obj, count):
         for i in range(count):
@@ -158,6 +159,12 @@ class MapWidget(QWidget):
         if self.annot.get_visible():
             self.annot.set_visible(False)
             self.canvas.draw_idle()
+
+    def onPick(event):
+        line = event.artist
+        xdata, ydata = line.get_data()
+        ind = event.ind
+        print(f'on pick line: {xdata[ind]:.3f}, {ydata[ind]:.3f}')
 
     def initTCP(self):
         self.paths.clear()

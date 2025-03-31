@@ -1,4 +1,6 @@
 from PyQt5.QtWidgets import QPushButton
+from PyQt5 import QtCore
+from PyQt5.QtGui import QCursor
 
 class Option:
     auto_start_animation: bool = True
@@ -26,4 +28,5 @@ def makeButton(text, color, callback=None):
     setButtonStyle(button, color)
     if callback is not None:
         button.clicked.connect(callback)
+        button.setCursor(QCursor(QtCore.Qt.CursorShape.PointingHandCursor))
     return button
