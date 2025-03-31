@@ -61,9 +61,10 @@ class MapWidget(QWidget):
         self.annot.set_visible(False)
         self.canvas.mpl_connect("motion_notify_event", self.hover)
         self.canvas.mpl_connect("button_press_event", self.onClick)
+        self.canvas.mpl_connect("button_release_event", self.onRelease)
 
     def remove(self, obj, count):
-        for i in range(count):
+        for _ in range(count):
             obj.pop().remove()
 
     def setCities(self, points_x, points_y):
@@ -75,9 +76,12 @@ class MapWidget(QWidget):
         self.canvas.draw()
         self.cities_x, self.cities_y = points_x, points_y
 
-    def moveCity(self, city, x, y):
-        self.cities_x[city], self.cities_y[city] = x, y
+    def updateCities(self):
         self.setCities(self.cities_x, self.cities_y)
+        self.paths.clear()
+        self.path_index = 0
+        self.updateControlPathButtons()
+        self.parent().stopAlgorithm()
 
     def setPath(self, path, distance):
         self.remove(self.vertices, len(self.vertices))
@@ -153,10 +157,11 @@ class MapWidget(QWidget):
 
     def hover(self, event):
         if event.inaxes == self.ax:
-            if self.selected_city is not None:
+            if self.selected_city is not None: # Move selected city
+                self.cities_x[self.selected_city], self.cities_y[self.selected_city] = event.xdata, event.ydata
+                self.updateCities()
                 if event.button != 1:
                     self.selected_city = None
-                self.moveCity(self.selected_city, event.xdata, event.ydata)
                 return
             for i, (x, y) in enumerate(zip(self.cities_x, self.cities_y)):
                 if abs(x - event.xdata) < 0.01 and abs(y - event.ydata) < 0.01:
@@ -169,14 +174,25 @@ class MapWidget(QWidget):
             self.canvas.draw_idle()
 
     def onClick(self, event):
-        if event.button == 0:
+        if event.button == 1:
             self.selected_city = None
             for i, (x, y) in enumerate(zip(self.cities_x, self.cities_y)):
                 if abs(x - event.xdata) < 0.01 and abs(y - event.ydata) < 0.01:
-                    self.selected_city = i
+                    if event.dblclick: # Remove selected city
+                        del self.cities_x[i]
+                        del self.cities_y[i]
+                        self.updateCities()
+                    else: # Move selected city
+                        self.selected_city = i
                     return
-        elif event.button == 2:
-            self.addCity(event.xdata, event.ydata)
+        elif event.button == 3: # Add new city
+            self.cities_x.append(event.xdata)
+            self.cities_y.append(event.ydata)
+            self.updateCities()
+
+    def onRelease(self, event):
+        if event.button == 1:
+            self.selected_city = None
 
     def initTCP(self):
         self.paths.clear()

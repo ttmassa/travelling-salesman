@@ -100,16 +100,18 @@ class MainWindow(QWidget):
             except Exception as e:
                 print("Error saving file:", e)
 
-    def runAlgorithm(self, num_cities, population_size, generations, mutation_rate, elitism, show_evolution, use_pregen_cities, use_stagnation_threshold):
-        if use_pregen_cities and len(self.map.cities_x) == 0:
-            return
-
+    def stopAlgorithm(self):
         if self.tsp_genetic is not None:
             self.close_tsp = True
             self.tsp_thread.join()
             self.close_tsp = False
-
         self.execution_queue.clear()
+
+    def runAlgorithm(self, num_cities, population_size, generations, mutation_rate, elitism, show_evolution, use_pregen_cities, use_stagnation_threshold):
+        if use_pregen_cities and len(self.map.cities_x) == 0:
+            return
+
+        self.stopAlgorithm()
 
         if show_evolution:
             self.evolution.clear()
