@@ -1,5 +1,7 @@
 from PyQt5.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout
 from PyQt5.QtCore import QTimer
+from PyQt5 import QtCore
+from PyQt5.QtGui import QCursor
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 from utils import makeButton, setButtonStyle
@@ -169,7 +171,10 @@ class MapWidget(QWidget):
                     self.updateAnnot(i)
                     self.annot.set_visible(True)
                     self.canvas.draw_idle()
+
+                    self.setCursor(QCursor(QtCore.Qt.CursorShape.OpenHandCursor))
                     return
+            self.setCursor(QCursor(QtCore.Qt.CursorShape.ArrowCursor))
         if self.annot.get_visible():
             self.annot.set_visible(False)
             self.canvas.draw_idle()
@@ -185,15 +190,24 @@ class MapWidget(QWidget):
                         self.updateCities()
                     else: # Move selected city
                         self.selected_city = i
+                        self.setCursor(QCursor(QtCore.Qt.CursorShape.ClosedHandCursor))
+                    if self.annot.get_visible():
+                        self.annot.set_visible(False)
+                        self.canvas.draw_idle()
                     return
         elif event.button == 3: # Add new city
             self.cities_x.append(event.xdata)
             self.cities_y.append(event.ydata)
             self.updateCities()
+            self.setCursor(QCursor(QtCore.Qt.CursorShape.OpenHandCursor))
 
     def onRelease(self, event):
-        if event.button == 1:
+        if event.button == 1 and self.selected_city is not None:
             self.selected_city = None
+            if event.xdata is None:
+                self.setCursor(QCursor(QtCore.Qt.CursorShape.ArrowCursor))
+            else:
+                self.setCursor(QCursor(QtCore.Qt.CursorShape.OpenHandCursor))
 
     def initTCP(self):
         self.paths.clear()
