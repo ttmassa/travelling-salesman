@@ -24,23 +24,23 @@ To use the GUI, follow these steps:
 
 1. Clone the repository:
 
-    ```sh
-        git clone https://github.com/ttmassa/travelling-salesman
-        cd travelling-salesman
-    ```
+   ```sh
+       git clone https://github.com/ttmassa/travelling-salesman
+       cd travelling-salesman
+   ```
 
 2. Install the required dependencies:
-    ```sh
-        pip install -r requirements.txt
-    ```
+   ```sh
+      pip install -r requirements.txt
+   ```
 
 ## Usage
 
 To run the application, execute the following command:
 
-```sh
-        python src/main.py
-```
+   ```sh
+      python src/main.py
+   ```
 This will launch the GUI where you can input parameters and visualize the results. 
 
 ### Demo Videos
