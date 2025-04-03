@@ -180,7 +180,7 @@ class MapWidget(QWidget):
             self.canvas.draw_idle()
 
     def onClick(self, event):
-        if event.button == 1:
+        if event.button == 1 and event.xdata is not None:
             self.selected_city = None
             for i, (x, y) in enumerate(zip(self.cities_x, self.cities_y)):
                 if abs(x - event.xdata) < 0.01 and abs(y - event.ydata) < 0.01:
