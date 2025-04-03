@@ -38,9 +38,9 @@ To use the GUI, follow these steps:
 
 To run the application, execute the following command:
 
-    ```sh
+```sh
         python src/main.py
-    ```
+```
 This will launch the GUI where you can input parameters and visualize the results. 
 
 ### Demo Videos
